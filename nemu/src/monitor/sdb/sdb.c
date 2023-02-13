@@ -18,6 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+#include <memory/vaddr.h>
 
 static int is_batch_mode = false;
 
@@ -66,7 +67,32 @@ static int cmd_info(char *args) {
   }
   return 0;
 }
-
+static int cmd_x() {
+  char *sn = strtok(NULL, " ");
+  char *saddr = strtok(NULL, " ");
+  if(sn == NULL || saddr == NULL) {
+    printf("Usage: x n addr\n");
+    return 0;
+  }
+  int n = 0;
+  if(!sscanf(sn, "%d", &n)) {
+    printf("%s is not a number!\n", sn);
+    return 0;
+  }
+  paddr_t addr;
+  // TODO: 64bits?
+  if(!sscanf(saddr, "%x", &addr)) {
+    printf("%s is not a addr!\n", saddr);
+    return 0;
+  }
+  printf("%d values from %#x is:\n", n, addr);
+  for(int i = 0; i < n; i ++) {
+    word_t w = vaddr_read(addr + i, 4);
+    printf("%#x\t", w);
+  }
+  printf("\n");
+  return 0;
+}
 static int cmd_help(char *args);
 
 static struct {
@@ -78,6 +104,7 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
   { "info", "Print programe state:(r)egister or (w)atch", cmd_info},
+  {"x", "Print N * 4 bytes memory value.", cmd_x}
 
   /* TODO: Add more commands */
 
