@@ -6,7 +6,9 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/nemu/include"
             ],
-            "defines": [],
+            "defines": [
+                "ITRACE_COND=1"
+            ],
             "compilerPath": "/usr/lib/ccache/gcc",
             "cStandard": "gnu17",
             "cppStandard": "gnu++17",
