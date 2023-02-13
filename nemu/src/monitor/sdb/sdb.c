@@ -18,7 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
-#include <memory/vaddr.h>
+#include <memory/paddr.h>
 
 static int is_batch_mode = false;
 
@@ -87,8 +87,8 @@ static int cmd_x() {
   }
   printf("%d values from %#x is:\n", n, addr);
   for(int i = 0; i < n; i ++) {
-    word_t w = vaddr_read(addr + i, 4);
-    printf("%#x\t", w);
+    uint8_t * host_addr = guest_to_host(addr + i);
+    printf("%#x|", *host_addr);
   }
   printf("\n");
   return 0;
