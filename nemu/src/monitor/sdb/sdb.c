@@ -93,6 +93,18 @@ static int cmd_x() {
   printf("\n");
   return 0;
 }
+int cmd_si()
+{
+  int n = 1;
+  char *sn = strtok(NULL, " ");
+
+  if(sn!= NULL && !sscanf(sn, "%d", &n)) {
+    printf("%s is not a number!\n", sn);
+    return 0;
+  }
+  cpu_exec(n);
+  return 0;
+}
 static int cmd_help(char *args);
 
 static struct {
@@ -104,7 +116,8 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
   { "info", "Print programe state:(r)egister or (w)atch", cmd_info},
-  {"x", "Print N * 4 bytes memory value.", cmd_x}
+  {"x", "Print N * 4 bytes memory value.", cmd_x},
+  {"si", "Run [N] Steps", cmd_si}
 
   /* TODO: Add more commands */
 
