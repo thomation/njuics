@@ -87,8 +87,8 @@ static int cmd_x() {
   }
   printf("%d values from %#x is:\n", n, addr);
   for(int i = 0; i < n; i ++) {
-    uint8_t * host_addr = guest_to_host(addr + i);
-    printf("%#x|", *host_addr);
+    uint8_t * host_addr = guest_to_host(addr + i * 4);
+    printf("%#x|", *(uint32_t*)host_addr);
   }
   printf("\n");
   return 0;
