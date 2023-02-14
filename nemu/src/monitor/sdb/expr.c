@@ -21,7 +21,9 @@
 #include <regex.h>
 
 enum {
-  TK_NOTYPE = 256, TK_EQ,
+  TK_NOTYPE = 256,
+  TK_EQ,
+  TK_NUM,
 
   /* TODO: Add more token types */
 
@@ -39,6 +41,7 @@ static struct rule {
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
+  {"[0-9]+", TK_NUM}
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -70,6 +73,15 @@ typedef struct token {
 static Token tokens[32] __attribute__((used)) = {};
 static int nr_token __attribute__((used))  = 0;
 
+static void add_token(int token_type) {
+  Token *t = &tokens[nr_token ++];
+  t->type = token_type;
+}
+static void add_token_with_str(int token_type, char* start, int len) {
+  Token *t = &tokens[nr_token ++];
+  t->type = token_type;
+  strncpy(t->str, start, len);
+}
 static bool make_token(char *e) {
   int position = 0;
   int i;
@@ -84,17 +96,21 @@ static bool make_token(char *e) {
         char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
 
-        Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
-            i, rules[i].regex, position, substr_len, substr_len, substr_start);
+        Log("match rules[%d] = \"%s\", type %d at position %d with len %d: %.*s",
+            i, rules[i].regex, rules[i].token_type, position, substr_len, substr_len, substr_start);
 
         position += substr_len;
 
-        /* TODO: Now a new token is recognized with rules[i]. Add codes
-         * to record the token in the array `tokens'. For certain types
-         * of tokens, some extra actions should be performed.
-         */
-
         switch (rules[i].token_type) {
+          case TK_NOTYPE:
+            break;
+          case TK_EQ:
+          case '+':
+            add_token(rules[i].token_type);
+            break;
+          case TK_NUM:
+            add_token_with_str(rules[i].token_type, substr_start, substr_len);
+            break;
           default: TODO();
         }
 
@@ -110,6 +126,19 @@ static bool make_token(char *e) {
 
   return true;
 }
+word_t eval(int p, int q, bool * success) {
+  if(p > q) {
+    *success = false;
+    return 0;
+  } else if(p == q) {
+    char * s = tokens[p].str;
+    word_t num;
+    sscanf(s, "%d", &num);
+    *success = true;
+    return num;
+  }
+  return 0;
+}
 
 
 word_t expr(char *e, bool *success) {
@@ -117,9 +146,5 @@ word_t expr(char *e, bool *success) {
     *success = false;
     return 0;
   }
-
-  /* TODO: Insert codes to evaluate the expression. */
-  TODO();
-
-  return 0;
+  return eval(0, nr_token - 1, success);
 }
