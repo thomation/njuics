@@ -43,69 +43,13 @@ static char* rl_gets() {
   return line_read;
 }
 
-static int cmd_c(char *args) {
-  cpu_exec(-1);
-  return 0;
-}
-
-
-static int cmd_q(char *args) {
-  NEMUTRAP(cpu.pc , 0);
-  return -1;
-}
-
-static int cmd_info(char *args) {
-  char *arg = strtok(NULL, " ");
-  if(!arg) {
-    printf("Usage: info -r or -w\n");
-  }else if(strcmp(arg, "-r") == 0) {
-    isa_reg_display();
-  } else if(strcmp(arg, "-w") == 0) {
-    printf("Coming soon!\n");
-  } else {
-    printf("Arg %s is not supported\n", arg);
-  }
-  return 0;
-}
-static int cmd_x() {
-  char *sn = strtok(NULL, " ");
-  char *saddr = strtok(NULL, " ");
-  if(sn == NULL || saddr == NULL) {
-    printf("Usage: x n addr\n");
-    return 0;
-  }
-  int n = 0;
-  if(!sscanf(sn, "%d", &n)) {
-    printf("%s is not a number!\n", sn);
-    return 0;
-  }
-  paddr_t addr;
-  // TODO: 64bits?
-  if(!sscanf(saddr, "%x", &addr)) {
-    printf("%s is not a addr!\n", saddr);
-    return 0;
-  }
-  printf("%d values from %#x is:\n", n, addr);
-  for(int i = 0; i < n; i ++) {
-    uint8_t * host_addr = guest_to_host(addr + i * 4);
-    printf("%#x|", *(uint32_t*)host_addr);
-  }
-  printf("\n");
-  return 0;
-}
-int cmd_si()
-{
-  int n = 1;
-  char *sn = strtok(NULL, " ");
-
-  if(sn!= NULL && !sscanf(sn, "%d", &n)) {
-    printf("%s is not a number!\n", sn);
-    return 0;
-  }
-  cpu_exec(n);
-  return 0;
-}
 static int cmd_help(char *args);
+static int cmd_c(char *args);
+static int cmd_q(char *args); 
+static int cmd_info(char *args);
+static int cmd_x(char *args);
+static int cmd_si(char *args);
+static int cmd_p(char *args);
 
 static struct {
   const char *name;
@@ -117,7 +61,8 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
   { "info", "Print programe state:(r)egister or (w)atch", cmd_info},
   {"x", "Print N * 4 bytes memory value.", cmd_x},
-  {"si", "Run [N] Steps", cmd_si}
+  {"si", "Run [N] Steps", cmd_si},
+  {"p", "Compute expression", cmd_p},
 
   /* TODO: Add more commands */
 
@@ -148,6 +93,73 @@ static int cmd_help(char *args) {
   return 0;
 }
 
+static int cmd_c(char *args) {
+  cpu_exec(-1);
+  return 0;
+}
+
+
+static int cmd_q(char *args) {
+  NEMUTRAP(cpu.pc , 0);
+  return -1;
+}
+
+static int cmd_info(char *args) {
+  char *arg = strtok(NULL, " ");
+  if(!arg) {
+    printf("Usage: info -r or -w\n");
+  }else if(strcmp(arg, "-r") == 0) {
+    isa_reg_display();
+  } else if(strcmp(arg, "-w") == 0) {
+    printf("Coming soon!\n");
+  } else {
+    printf("Arg %s is not supported\n", arg);
+  }
+  return 0;
+}
+static int cmd_x(char *args) {
+  char *sn = strtok(NULL, " ");
+  char *saddr = strtok(NULL, " ");
+  if(sn == NULL || saddr == NULL) {
+    printf("Usage: x n addr\n");
+    return 0;
+  }
+  int n = 0;
+  if(!sscanf(sn, "%d", &n)) {
+    printf("%s is not a number!\n", sn);
+    return 0;
+  }
+  paddr_t addr;
+  // TODO: 64bits?
+  if(!sscanf(saddr, "%x", &addr)) {
+    printf("%s is not a addr!\n", saddr);
+    return 0;
+  }
+  printf("%d values from %#x is:\n", n, addr);
+  for(int i = 0; i < n; i ++) {
+    uint8_t * host_addr = guest_to_host(addr + i * 4);
+    printf("%#x|", *(uint32_t*)host_addr);
+  }
+  printf("\n");
+  return 0;
+}
+int cmd_si(char *args)
+{
+  int n = 1;
+  char *sn = strtok(NULL, " ");
+
+  if(sn!= NULL && !sscanf(sn, "%d", &n)) {
+    printf("%s is not a number!\n", sn);
+    return 0;
+  }
+  cpu_exec(n);
+  return 0;
+}
+int cmd_p(char *args)
+{
+  printf("cmd_p: %s\n", args);
+  return 0;
+}
 void sdb_set_batch_mode() {
   is_batch_mode = true;
 }
