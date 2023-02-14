@@ -126,6 +126,30 @@ static bool make_token(char *e) {
 
   return true;
 }
+int find_op(int p, int q, bool *success) {
+  int pri = 0;
+  int op = -1;
+  for(int i = p; i <= q; i ++) {
+    switch (tokens[i].type) {
+      case '+':
+      case '-':
+        if(pri < 2) {
+          op = i;
+          pri = 2;
+        }
+        break;
+      case '*':
+      case '/':
+        if(pri < 1) {
+          op = i;
+          pri = 1;
+        }
+        break;
+    }
+  }
+  *success = op >= 0;
+  return op;
+}
 word_t eval(int p, int q, bool * success) {
   if(p > q) {
     *success = false;
@@ -136,6 +160,25 @@ word_t eval(int p, int q, bool * success) {
     sscanf(s, "%d", &num);
     *success = true;
     return num;
+  } else {
+    int op = find_op(p, q, success);
+    if(!*success) {
+      return 0;
+    }
+    word_t lv = eval(p, op - 1, success);
+    if(!*success) {
+      return 0;
+    }
+    word_t lr = eval(op + 1, q, success);
+    if(!*success) {
+      return 0;
+    }
+    switch(tokens[op].type) {
+      case '+':
+        return lv + lr; 
+      default:
+        TODO();
+    }
   }
   return 0;
 }
