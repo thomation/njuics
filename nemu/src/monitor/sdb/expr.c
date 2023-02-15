@@ -46,7 +46,7 @@ static struct rule {
   {"==", TK_EQ},        // equal
   {"\\(", '('},
   {"\\)", ')'},
-  {"[0-9]+", TK_NUM}
+  {"0x[0-9|a-f]+|[0-9]+", TK_NUM}
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -137,6 +137,17 @@ static bool make_token(char *e) {
 
   return true;
 }
+word_t str_to_int(int p, bool *success) {
+    char * s = tokens[p].str;
+    printf("num:%s\n", s);
+    word_t num;
+    if(strlen(s) >= 2 && s[0] == '0' && s[1] == 'x')
+      sscanf(s, "%x", &num);
+    else
+      sscanf(s, "%d", &num);
+    *success = true;
+    return num;
+}
 bool check_parentheses(int p, int q) {
   return tokens[p].type == '(' && tokens[q].type == ')';
 }
@@ -176,12 +187,7 @@ word_t eval(int p, int q, bool * success) {
     *success = false;
     return 0;
   } else if(p == q) {
-    char * s = tokens[p].str;
-    printf("num:%s\n", s);
-    word_t num;
-    sscanf(s, "%d", &num);
-    *success = true;
-    return num;
+    return str_to_int(p, success);
   } else if (check_parentheses(p, q)){
     return eval(p + 1, q - 1, success);
   } else {
