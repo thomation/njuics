@@ -41,6 +41,8 @@ static struct rule {
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
+  {"\\(", '('},
+  {"\\)", ')'},
   {"[0-9]+", TK_NUM}
 };
 
@@ -81,6 +83,7 @@ static void add_token_with_str(int token_type, char* start, int len) {
   Token *t = &tokens[nr_token ++];
   t->type = token_type;
   strncpy(t->str, start, len);
+  t->str[len] = '\0';
 }
 static bool make_token(char *e) {
   int position = 0;
@@ -106,6 +109,8 @@ static bool make_token(char *e) {
             break;
           case TK_EQ:
           case '+':
+          case '(':
+          case ')':
             add_token(rules[i].token_type);
             break;
           case TK_NUM:
@@ -125,6 +130,9 @@ static bool make_token(char *e) {
   }
 
   return true;
+}
+bool check_parentheses(int p, int q) {
+  return tokens[p].type == '(' && tokens[q].type == ')';
 }
 int find_op(int p, int q, bool *success) {
   int pri = 0;
@@ -156,10 +164,13 @@ word_t eval(int p, int q, bool * success) {
     return 0;
   } else if(p == q) {
     char * s = tokens[p].str;
+    printf("num:%s\n", s);
     word_t num;
     sscanf(s, "%d", &num);
     *success = true;
     return num;
+  } else if (check_parentheses(p, q)){
+    return eval(p + 1, q - 1, success);
   } else {
     int op = find_op(p, q, success);
     if(!*success) {
@@ -170,6 +181,7 @@ word_t eval(int p, int q, bool * success) {
       return 0;
     }
     word_t lr = eval(op + 1, q, success);
+    printf("%d %c %d = ?\n", lv, tokens[op].type, lr);
     if(!*success) {
       return 0;
     }
