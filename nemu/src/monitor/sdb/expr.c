@@ -40,6 +40,9 @@ static struct rule {
 
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
+  {"\\-", '-'},
+  {"\\*", '*'},
+  {"\\/", '/'},
   {"==", TK_EQ},        // equal
   {"\\(", '('},
   {"\\)", ')'},
@@ -109,6 +112,9 @@ static bool make_token(char *e) {
             break;
           case TK_EQ:
           case '+':
+          case '-':
+          case '*':
+          case '/':
           case '(':
           case ')':
             add_token(rules[i].token_type);
@@ -137,25 +143,32 @@ bool check_parentheses(int p, int q) {
 int find_op(int p, int q, bool *success) {
   int pri = 0;
   int op = -1;
+  int bcount = 0;
   for(int i = p; i <= q; i ++) {
     switch (tokens[i].type) {
       case '+':
       case '-':
-        if(pri < 2) {
+        if(pri < 2 && bcount == 0) {
           op = i;
           pri = 2;
         }
         break;
       case '*':
       case '/':
-        if(pri < 1) {
+        if(pri < 1 && bcount == 0) {
           op = i;
           pri = 1;
         }
         break;
+      case '(':
+        bcount ++;
+        break;
+      case ')':
+        bcount --;
+        break;
     }
   }
-  *success = op >= 0;
+  *success = op >= 0 && bcount == 0;
   return op;
 }
 word_t eval(int p, int q, bool * success) {
@@ -186,8 +199,10 @@ word_t eval(int p, int q, bool * success) {
       return 0;
     }
     switch(tokens[op].type) {
-      case '+':
-        return lv + lr; 
+      case '+': return lv + lr; 
+      case '-': return lv - lr;
+      case '*': return lv * lr;
+      case '/': return lv / lr;
       default:
         TODO();
     }
