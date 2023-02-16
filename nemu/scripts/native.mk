@@ -43,6 +43,7 @@ gdb: run-env
 
 expr: run-env
 	$(NEMU_EXEC) < ./tools/gen-expr/command | grep := > ./tools/gen-expr/result
+	-diff ./tools/gen-expr/result ./tools/gen-expr/expr
 
 clean-tools = $(dir $(shell find ./tools -maxdepth 2 -mindepth 2 -name "Makefile"))
 $(clean-tools):
