@@ -164,18 +164,19 @@ int find_op(int p, int q, bool *success) {
   int pri = 0;
   int op = -1;
   int bcount = 0;
+  // printf("find_op: %d to %d\n", p, q);
   for(int i = p; i <= q; i ++) {
     switch (tokens[i].type) {
       case '+':
       case '-':
-        if(pri < 2 && bcount == 0) {
+        if(pri <= 2 && bcount == 0) {
           op = i;
           pri = 2;
         }
         break;
       case '*':
       case '/':
-        if(pri < 1 && bcount == 0) {
+        if(pri <= 1 && bcount == 0) {
           op = i;
           pri = 1;
         }
@@ -189,6 +190,7 @@ int find_op(int p, int q, bool *success) {
     }
   }
   *success = op >= 0 && bcount == 0;
+  // printf("find_op result:%d\n", op);
   return op;
 }
 word_t eval(int p, int q, bool * success) {
