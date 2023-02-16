@@ -22,6 +22,8 @@
 
 // this should be enough
 static char buf[65536] = {};
+static char *buf_cur;
+static int token_num;
 static char code_buf[65536 + 128] = {}; // a little larger than `buf`
 static char *code_format =
 "#include <stdio.h>\n"
@@ -31,11 +33,38 @@ static char *code_format =
 "  return 0; "
 "}";
 
+static int choose(int n) {
+  int r = rand();
+  return r % n; 
+}
+static void gen_num() {
+  int r = rand() % 32768;
+  if (r < 0) r = -r;
+  char tmp[32];
+  sprintf(tmp, "%d", r);
+  int len = strlen(tmp);
+  strcpy(buf_cur, tmp);
+  buf_cur += len;
+  token_num ++;
+}
+static void gen(char c) {
+  *buf_cur ++ = c;
+  token_num ++;
+}
+static void gen_rand_op() {
+  switch(choose(4)) {
+    case 0: gen('+'); break;
+    case 1: gen('-'); break;
+    case 2: gen('*'); break;
+    default: gen('/'); break;
+  }
+}
 static void gen_rand_expr() {
-  buf[0] = '1';
-  buf[1] = '+';
-  buf[2] = '2';
-  buf[3] = '\0';
+  switch (choose(3)) {
+    case 0: gen_num(); break;
+    case 1: gen('('); gen_rand_expr(); gen(')'); break;
+    default: gen_rand_expr(); gen_rand_op(); gen_rand_expr(); break;
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -47,8 +76,12 @@ int main(int argc, char *argv[]) {
   }
   int i;
   for (i = 0; i < loop; i ++) {
+    buf_cur = buf;
+    token_num = 0;
     gen_rand_expr();
-
+    *buf_cur = '\0';
+    if(token_num > 32)
+      continue;
     sprintf(code_buf, code_format, buf);
 
     FILE *fp = fopen("/tmp/.code.c", "w");

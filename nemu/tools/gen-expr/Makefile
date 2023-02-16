@@ -18,6 +18,7 @@ SRCS = gen-expr.c
 include $(NEMU_HOME)/scripts/build.mk
 
 run: app
-	./build/gen-expr 1 > expr
+	-echo run ${times} times
+	./build/gen-expr ${times} > expr
 	-awk -F "=" '{print "p", $$2}' expr > command
 	-echo 'q' >> command
