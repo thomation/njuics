@@ -157,13 +157,12 @@ int cmd_si(char *args)
 }
 int cmd_p(char *args)
 {
-  printf("cmd_p: %s\n", args);
   bool suc;
   word_t v = expr(args, &suc);
   if(suc) {
-    printf("%u\n", v);
+    printf("%u:=%s\n", v, args);
   } else {
-    printf("Invalid expression\n");
+    printf("?:=%s\n", args);
   }
   return 0;
 }
