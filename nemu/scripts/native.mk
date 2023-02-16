@@ -41,9 +41,11 @@ gdb: run-env
 	$(call git_commit, "gdb NEMU")
 	gdb -s $(BINARY) --args $(NEMU_EXEC)
 
+EXPR_TOOL := ./tools/gen-expr/
+
 expr: run-env
-	$(NEMU_EXEC) < ./tools/gen-expr/command | grep := > ./tools/gen-expr/result
-	-diff ./tools/gen-expr/result ./tools/gen-expr/expr
+	$(NEMU_EXEC) < $(EXPR_TOOL)command | grep := > $(EXPR_TOOL)result
+	-diff $(EXPR_TOOL)result $(EXPR_TOOL)expr
 
 clean-tools = $(dir $(shell find ./tools -maxdepth 2 -mindepth 2 -name "Makefile"))
 $(clean-tools):
