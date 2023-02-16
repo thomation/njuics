@@ -16,3 +16,7 @@
 NAME = gen-expr
 SRCS = gen-expr.c
 include $(NEMU_HOME)/scripts/build.mk
+
+run: app
+	./build/gen-expr 1 > expr
+	-awk -F "=" '{print "p", $$2}' expr > command

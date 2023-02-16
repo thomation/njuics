@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
     int result;
     if(fscanf(fp, "%d", &result))
-      printf("%u %s\n", result, buf);
+      printf("%u=%s\n", result, buf);
     pclose(fp);
   }
   return 0;
