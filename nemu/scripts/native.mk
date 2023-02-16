@@ -42,7 +42,7 @@ gdb: run-env
 	gdb -s $(BINARY) --args $(NEMU_EXEC)
 
 expr: run-env
-	echo 'p 1 + 2' | $(NEMU_EXEC)
+	$(NEMU_EXEC) < ./tools/gen-expr/command
 
 clean-tools = $(dir $(shell find ./tools -maxdepth 2 -mindepth 2 -name "Makefile"))
 $(clean-tools):
