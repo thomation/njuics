@@ -149,7 +149,16 @@ word_t str_to_int(int p, bool *success) {
     return num;
 }
 bool check_parentheses(int p, int q) {
-  return tokens[p].type == '(' && tokens[q].type == ')';
+  if(!(tokens[p].type == '(' && tokens[q].type == ')'))
+    return false;
+  int lb = 0;
+  for(int i = p + 1; i <= q - 1; i ++) {
+    if(tokens[i].type == '(') lb ++;
+    if(tokens[i].type == ')') lb --;
+    if(lb < 0)
+      return false;
+  }
+  return true;
 }
 int find_op(int p, int q, bool *success) {
   int pri = 0;
