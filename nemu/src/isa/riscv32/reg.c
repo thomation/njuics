@@ -23,10 +23,13 @@ const char *regs[] = {
   "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
 
+static int regs_count() {
+  return sizeof(regs) / sizeof(const char*);
+}
 void isa_reg_display() {
   printf("Registers ========================\n");
   printf("PC: %x\n", cpu.pc);
-  int len = sizeof(regs) / sizeof(const char*);
+  int len = regs_count();
   for(int i = 0; i < len; i ++ ) {
     if(i % 8 == 0)
       printf("\n");
@@ -36,5 +39,13 @@ void isa_reg_display() {
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
+  int len = regs_count();
+  for(int i = 0; i < len; i ++) {
+    if(strcmp(s, regs[i]) == 0) {
+      *success = true;
+      return cpu.gpr[i];
+    }
+  }
+  *success = false;
   return 0;
 }

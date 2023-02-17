@@ -24,8 +24,7 @@ enum {
   TK_NOTYPE = 256,
   TK_EQ,
   TK_NUM,
-
-  /* TODO: Add more token types */
+  TK_REG,
 
 };
 
@@ -46,7 +45,8 @@ static struct rule {
   {"==", TK_EQ},        // equal
   {"\\(", '('},
   {"\\)", ')'},
-  {"0x[0-9|a-f]+|[0-9]+", TK_NUM}
+  {"0x[0-9|a-f]+|[0-9]+", TK_NUM},
+  {"\\$.+", TK_REG}
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -120,6 +120,7 @@ static bool make_token(char *e) {
             add_token(rules[i].token_type);
             break;
           case TK_NUM:
+          case TK_REG:
             add_token_with_str(rules[i].token_type, substr_start, substr_len);
             break;
           default: TODO();
@@ -137,9 +138,7 @@ static bool make_token(char *e) {
 
   return true;
 }
-word_t str_to_int(int p, bool *success) {
-    char * s = tokens[p].str;
-    printf("num:%s\n", s);
+static word_t str_to_int(char* s, bool *success) {
     word_t num;
     if(strlen(s) >= 2 && s[0] == '0' && s[1] == 'x')
       sscanf(s, "%x", &num);
@@ -147,6 +146,24 @@ word_t str_to_int(int p, bool *success) {
       sscanf(s, "%d", &num);
     *success = true;
     return num;
+}
+static word_t token_value(int p, bool *success) {
+    Token *t = &tokens[p];
+    char * s = t->str;
+    switch(t->type) {
+      case TK_NUM:
+        return str_to_int(s, success);
+      case TK_REG:
+        word_t v = isa_reg_str2val(s + 1, success);
+        if(*success == false) {
+          printf("Invalid reg name:%s\n", s + 1);
+        }
+        return v;
+      default:
+        printf("No support token: %d, %s\n", t->type, s);
+        *success = false;
+    }
+    return 0;
 }
 bool check_parentheses(int p, int q) {
   if(!(tokens[p].type == '(' && tokens[q].type == ')'))
@@ -198,7 +215,7 @@ word_t eval(int p, int q, bool * success) {
     *success = false;
     return 0;
   } else if(p == q) {
-    return str_to_int(p, success);
+    return token_value(p, success);
   } else if (check_parentheses(p, q)){
     return eval(p + 1, q - 1, success);
   } else {
