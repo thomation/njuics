@@ -129,12 +129,13 @@ static int cmd_x(char *args) {
     printf("%s is not a number!\n", sn);
     return 0;
   }
-  paddr_t addr;
-  // TODO: 64bits?
-  if(!sscanf(saddr, "%x", &addr)) {
-    printf("%s is not a addr!\n", saddr);
+  bool suc;
+  vaddr_t addr = expr(saddr, &suc);
+  if(!suc) {
+    printf("Invalid address:%s\n", saddr);
     return 0;
   }
+
   printf("%d values from %#x is:\n", n, addr);
   for(int i = 0; i < n; i ++) {
     uint8_t * host_addr = guest_to_host(addr + i * 4);
