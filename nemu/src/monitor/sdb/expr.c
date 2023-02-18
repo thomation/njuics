@@ -19,6 +19,7 @@
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
+#include <memory/vaddr.h>
 
 enum {
   TK_NOTYPE = 256,
@@ -233,10 +234,17 @@ static int operand_count(int op) {
 }
 word_t eval(int p, int q, bool * success); 
 static word_t eval_uniq(int op, int q, bool *success) {
-  word_t lr = eval(op + 1, q, success);
-  printf("%c %d = ?\n", tokens[op].type, lr);
-  if(!*success) {
-    return 0;
+  word_t rv = eval(op + 1, q, success);
+  switch(tokens[op].type) {
+    case TK_DEREF:
+      printf("deref %u = ?\n", rv);
+      if(!*success) {
+        return 0;
+      }
+      return vaddr_read(rv, sizeof(word_t));
+    default:
+      *success = false;
+      printf("Does not support:%d\n", tokens[op].type);
   }
   return 0;
 }
