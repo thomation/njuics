@@ -25,7 +25,8 @@ enum {
   TK_EQ,
   TK_NUM,
   TK_REG,
-
+  TK_DEREF,
+  TK_MINUS,
 };
 
 static struct rule {
@@ -244,11 +245,21 @@ word_t eval(int p, int q, bool * success) {
   return 0;
 }
 
-
+static bool is_operand(int p) {
+  if(p >= nr_token)
+    return false;
+  Token *t = &tokens[p];
+  return t->type == TK_NUM || t->type == TK_REG || t->type == '(' || t->type == ')';
+}
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
     *success = false;
     return 0;
+  }
+  for (int i = 0; i < nr_token; i ++) {
+    if (tokens[i].type == '*' && (i == 0 || !is_operand(i - 1)) ) {
+      tokens[i].type = TK_DEREF;
+    }
   }
   return eval(0, nr_token - 1, success);
 }
