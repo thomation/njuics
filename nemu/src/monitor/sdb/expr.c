@@ -178,25 +178,40 @@ bool check_parentheses(int p, int q) {
   }
   return true;
 }
-int find_op(int p, int q, bool *success) {
-  int pri = 0;
-  int op = -1;
+typedef int Ops[5];
+// 0 is the end of array
+static Ops op_pri[] = {
+  {TK_DEREF, 0},
+  {'*', '/', 0},
+  {'+', '-', 0},
+};
+static int find_op_pri(int op) {
+  int len = sizeof(op_pri) / sizeof(Ops);
+  for(int i = 0; i < len; i++) {
+    for(int j = 0; op_pri[i][j] != 0; j ++) {
+      if(op_pri[i][j] == op)
+        return i;
+    }
+  }
+  return -1;
+}
+static int find_op(int p, int q, bool *success) {
+  int last_pri = -1;
+  int last_op_index = -1;
   int bcount = 0;
   // printf("find_op: %d to %d\n", p, q);
   for(int i = p; i <= q; i ++) {
-    switch (tokens[i].type) {
+    int op = tokens[i].type;
+    switch (op) {
       case '+':
       case '-':
-        if(pri <= 2 && bcount == 0) {
-          op = i;
-          pri = 2;
-        }
-        break;
       case '*':
       case '/':
-        if(pri <= 1 && bcount == 0) {
-          op = i;
-          pri = 1;
+      case TK_DEREF: 
+        int pri = find_op_pri(op);
+        if(pri >= last_pri && bcount == 0) {
+          last_op_index = i;  
+          last_pri = pri;
         }
         break;
       case '(':
@@ -207,9 +222,44 @@ int find_op(int p, int q, bool *success) {
         break;
     }
   }
-  *success = op >= 0 && bcount == 0;
+  *success = last_op_index >= 0 && bcount == 0;
   // printf("find_op result:%d\n", op);
-  return op;
+  return last_op_index;
+}
+static int operand_count(int op) {
+  if(op == TK_DEREF)
+    return 1;
+  return 2;
+}
+word_t eval(int p, int q, bool * success); 
+static word_t eval_uniq(int op, int q, bool *success) {
+  word_t lr = eval(op + 1, q, success);
+  printf("%c %d = ?\n", tokens[op].type, lr);
+  if(!*success) {
+    return 0;
+  }
+  return 0;
+}
+static word_t eval_binary(int p, int op, int q, bool *success) {
+    word_t lv = eval(p, op - 1, success);
+    if(!*success) {
+      return 0;
+    }
+    word_t rv = eval(op + 1, q, success);
+    printf("%d %c %d = ?\n", lv, tokens[op].type, rv);
+    if(!*success) {
+      return 0;
+    }
+    switch(tokens[op].type) {
+      case '+': return lv + rv; 
+      case '-': return lv - rv;
+      case '*': return lv * rv;
+      case '/': return lv / rv;
+      default:
+        TODO();
+    }
+    *success = false;
+    return 0;
 }
 word_t eval(int p, int q, bool * success) {
   if(p > q) {
@@ -224,22 +274,16 @@ word_t eval(int p, int q, bool * success) {
     if(!*success) {
       return 0;
     }
-    word_t lv = eval(p, op - 1, success);
-    if(!*success) {
-      return 0;
-    }
-    word_t lr = eval(op + 1, q, success);
-    printf("%d %c %d = ?\n", lv, tokens[op].type, lr);
-    if(!*success) {
-      return 0;
-    }
-    switch(tokens[op].type) {
-      case '+': return lv + lr; 
-      case '-': return lv - lr;
-      case '*': return lv * lr;
-      case '/': return lv / lr;
-      default:
-        TODO();
+    int op_cout = operand_count(tokens->type);
+    switch (op_cout) {
+    case 1:
+      return eval_uniq(op, q, success);
+    case 2: 
+      return eval_binary(p, op, q, success);
+    default:
+      printf("Does not support %d operands\n", op_cout);
+      *success = false;
+      break;
     }
   }
   return 0;
