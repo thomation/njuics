@@ -21,6 +21,7 @@ struct watchpoint
 {
   int NO;
   char expr[64];
+  word_t snapshot;
   struct watchpoint *next;
 };
 
@@ -43,17 +44,21 @@ void init_wp_pool()
 WP new_wp(char *e)
 {
   Assert(free_, "Only support %d watchpoints", NR_WP);
+  bool suc;
+  word_t v = expr(e, &suc);
+  Assert(suc, "Invalid expr:%s\n", e);
   WP wp = free_;
   free_ = free_->next;
   wp->next = head;
   head = wp;
   strncpy(wp->expr, e, 64);
+  wp->snapshot = v;
   return wp;
 }
 void wp_info(WP wp)
 {
   Assert(wp, "Empty wp");
-  printf("wp no: %d, expr:%s\n", wp->NO, wp->expr);
+  printf("wp no: %d, expr:%s, snapsot:%u\n", wp->NO, wp->expr, wp->snapshot);
 }
 void wp_list_info()
 {
