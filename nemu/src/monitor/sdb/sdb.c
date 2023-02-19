@@ -129,7 +129,7 @@ static int cmd_info(char *args)
   }
   else if (strcmp(arg, "-w") == 0)
   {
-    printf("Coming soon!\n");
+    wp_list_info();
   }
   else
   {

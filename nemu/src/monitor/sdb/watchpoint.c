@@ -55,6 +55,15 @@ void wp_info(WP wp)
   Assert(wp, "Empty wp");
   printf("wp no: %d, expr:%s\n", wp->NO, wp->expr);
 }
+void wp_list_info()
+{
+  WP wp = head;
+  while(wp)
+  {
+    wp_info(wp);
+    wp = wp->next;
+  }
+}
 void free_wp(WP wp)
 {
   TODO();
