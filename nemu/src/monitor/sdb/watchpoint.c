@@ -20,9 +20,8 @@
 struct watchpoint
 {
   int NO;
+  char expr[64];
   struct watchpoint *next;
-
-  /* TODO: Add more members if necessary */
 };
 
 static struct watchpoint wp_pool[NR_WP] = {};
@@ -43,11 +42,18 @@ void init_wp_pool()
 
 WP new_wp(char *e)
 {
-  TODO();
+  Assert(free_, "Only support %d watchpoints", NR_WP);
+  WP wp = free_;
+  free_ = free_->next;
+  wp->next = head;
+  head = wp;
+  strncpy(wp->expr, e, 64);
+  return wp;
 }
 void wp_info(WP wp)
 {
-  TODO();
+  Assert(wp, "Empty wp");
+  printf("wp no: %d, expr:%s\n", wp->NO, wp->expr);
 }
 void free_wp(WP wp)
 {
