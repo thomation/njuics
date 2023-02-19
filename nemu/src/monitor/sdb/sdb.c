@@ -198,6 +198,21 @@ int cmd_p(char *args)
 }
 int cmd_w(char *args)
 {
+  char *e = strtok(NULL, " ");
+  if (!e)
+  {
+    printf("Usage: w [expr]\n");
+    return 0;
+  }
+  bool suc;
+  expr(e, &suc);
+  if (!suc)
+  {
+    printf("Invalid expr:%s\n", e);
+    return 0;
+  }
+  WP wp = new_wp(e);
+  wp_info(wp);
   return 0;
 }
 int cmd_d(char *args)
