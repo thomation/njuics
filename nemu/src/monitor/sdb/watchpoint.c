@@ -110,3 +110,20 @@ void free_wp(int n)
   wp_info(wp);
   remove_wp(wp);
 }
+bool check_wp()
+{
+  WP wp = head;
+  while (wp)
+  {
+    bool suc;
+    word_t v = expr(wp->expr, &suc);
+    if(!suc || v != wp->snapshot)
+    {
+      printf("Catch watchpoint new value:%u\n", v);
+      wp_info(wp);
+      return true;
+    }
+    wp = wp->next;
+  }
+  return false;
+}
