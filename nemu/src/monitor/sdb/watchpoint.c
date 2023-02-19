@@ -58,13 +58,50 @@ void wp_info(WP wp)
 void wp_list_info()
 {
   WP wp = head;
-  while(wp)
+  while (wp)
   {
     wp_info(wp);
     wp = wp->next;
   }
 }
-void free_wp(WP wp)
+static WP find_wp(int n)
 {
-  TODO();
+  WP wp = head;
+  while (wp)
+  {
+    if (wp->NO == n)
+      return wp;
+    wp = wp->next;
+  }
+  return NULL;
+}
+static void remove_wp(WP wp)
+{
+  if (head == wp)
+  {
+    head = wp->next;
+  }
+  else
+  {
+    WP pre = head;
+    while (pre && pre->next != wp)
+    {
+      pre = pre->next;
+    }
+    pre->next = wp->next;
+  }
+  // Insert into free
+  wp->next = free_;
+  free_ = wp;
+}
+void free_wp(int n)
+{
+  WP wp = find_wp(n);
+  if (!wp)
+  {
+    printf("Cannot find watchpoint of number:%d\n", n);
+    return;
+  }
+  wp_info(wp);
+  remove_wp(wp);
 }

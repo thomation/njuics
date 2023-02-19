@@ -24,5 +24,5 @@ word_t expr(char *e, bool *success);
 WP new_wp(char *e);
 void wp_info(WP wp);
 void wp_list_info();
-void free_wp(WP wp);
+void free_wp(int n);
 #endif

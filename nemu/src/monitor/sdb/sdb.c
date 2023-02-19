@@ -217,6 +217,14 @@ int cmd_w(char *args)
 }
 int cmd_d(char *args)
 {
+  char *sn = strtok(NULL, " ");
+  int n;
+  if (sn != NULL && !sscanf(sn, "%d", &n))
+  {
+    printf("Usage: d [N]\n");
+    return 0;
+  }
+  free_wp(n);
   return 0;
 }
 void sdb_set_batch_mode()
