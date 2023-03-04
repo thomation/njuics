@@ -33,7 +33,7 @@ void isa_reg_display() {
   for(int i = 0; i < len; i ++ ) {
     if(i % 8 == 0)
       printf("\n");
-    printf("%s: %u, \t", regs[i], cpu.gpr[i]);
+    printf("%s: 0x%08x, \t", regs[i], cpu.gpr[i]);
   }
   printf("\n========================\n");
 }
