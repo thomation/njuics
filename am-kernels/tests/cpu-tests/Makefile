@@ -33,3 +33,4 @@ clean:
 	rm -rf Makefile.* build/
 
 latest:
+# Add NEMUFLAGS=-b
