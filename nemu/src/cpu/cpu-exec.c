@@ -25,19 +25,55 @@
  */
 #define MAX_INST_TO_PRINT 10
 
+#define LOG_SIZE 128
+#define IRINGBUF_SIZE 16
+typedef struct _logbuf {
+    char str[LOG_SIZE];
+} logbuf;
+typedef struct _iringbuf {
+    logbuf contents[IRINGBUF_SIZE];
+    int tail;
+    int count;
+} iringbuf;
+
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
-
+static iringbuf g_iringbuf;
 void device_update();
 extern bool check_wp();
-static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
+void append_log_to_iringbuf(const char * log) {
+    strncpy(g_iringbuf.contents[g_iringbuf.tail].str, log, LOG_SIZE);
+    g_iringbuf.count ++;
+    g_iringbuf.tail ++;
+    if(g_iringbuf.tail >= IRINGBUF_SIZE)
+        g_iringbuf.tail = 0;
+}
+static void pring_one_iringbuf_log(int index) {
+    char * s = g_iringbuf.contents[index].str;
+#ifdef CONFIG_ITRACE_COND
+  if (ITRACE_COND) { log_write("%s\n", s);}
+#endif
+  IFDEF(CONFIG_ITRACE, puts(s));
+}
+void print_iringbuf_log() {
+    if(g_iringbuf.count > IRINGBUF_SIZE) {
+        for(int i = g_iringbuf.tail + 1; i < IRINGBUF_SIZE; i ++) {
+            pring_one_iringbuf_log(i);
+        }
+    }
+    for(int i = 0; i <= g_iringbuf.tail; i ++) {
+        pring_one_iringbuf_log(i);
+    }
+}static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+
+  append_log_to_iringbuf(_this->logbuf);
 }
 
 static void exec_once(Decode *s, vaddr_t pc) {
@@ -98,6 +134,7 @@ void assert_fail_msg() {
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
   g_print_step = (n < MAX_INST_TO_PRINT);
+  g_iringbuf.count = g_iringbuf.tail = 0;
   switch (nemu_state.state) {
     case NEMU_END: case NEMU_ABORT:
       printf("Program execution has ended. To restart the program, exit NEMU and run again.\n");
@@ -123,8 +160,10 @@ void cpu_exec(uint64_t n) {
           nemu_state.halt_pc);
         if(nemu_state.state == NEMU_ABORT || nemu_state.halt_ret != 0) {
           Log("%s Print iringbuf here.\n", ANSI_FMT("ERROR!", ANSI_FG_RED) );
+          print_iringbuf_log();
         }
       // fall through
-    case NEMU_QUIT: statistic();
+    case NEMU_QUIT:
+      statistic();
   }
 }
