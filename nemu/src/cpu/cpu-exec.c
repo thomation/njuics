@@ -32,7 +32,7 @@ typedef struct _logbuf {
 } logbuf;
 typedef struct _iringbuf {
     logbuf contents[IRINGBUF_SIZE];
-    int tail;
+    int next_index;
     int count;
 } iringbuf;
 
@@ -44,11 +44,11 @@ static iringbuf g_iringbuf;
 void device_update();
 extern bool check_wp();
 void append_log_to_iringbuf(const char * log) {
-    strncpy(g_iringbuf.contents[g_iringbuf.tail].str, log, LOG_SIZE);
+    strncpy(g_iringbuf.contents[g_iringbuf.next_index].str, log, LOG_SIZE);
     g_iringbuf.count ++;
-    g_iringbuf.tail ++;
-    if(g_iringbuf.tail >= IRINGBUF_SIZE)
-        g_iringbuf.tail = 0;
+    g_iringbuf.next_index ++;
+    if(g_iringbuf.next_index >= IRINGBUF_SIZE)
+        g_iringbuf.next_index = 0;
 }
 static void pring_one_iringbuf_log(int index) {
     char * s = g_iringbuf.contents[index].str;
@@ -59,11 +59,11 @@ static void pring_one_iringbuf_log(int index) {
 }
 void print_iringbuf_log() {
     if(g_iringbuf.count > IRINGBUF_SIZE) {
-        for(int i = g_iringbuf.tail + 1; i < IRINGBUF_SIZE; i ++) {
+        for(int i = g_iringbuf.next_index; i < IRINGBUF_SIZE; i ++) {
             pring_one_iringbuf_log(i);
         }
     }
-    for(int i = 0; i <= g_iringbuf.tail; i ++) {
+    for(int i = 0; i < g_iringbuf.next_index; i ++) {
         pring_one_iringbuf_log(i);
     }
 }static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
@@ -134,7 +134,7 @@ void assert_fail_msg() {
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
   g_print_step = (n < MAX_INST_TO_PRINT);
-  g_iringbuf.count = g_iringbuf.tail = 0;
+  g_iringbuf.count = g_iringbuf.next_index = 0;
   switch (nemu_state.state) {
     case NEMU_END: case NEMU_ABORT:
       printf("Program execution has ended. To restart the program, exit NEMU and run again.\n");
