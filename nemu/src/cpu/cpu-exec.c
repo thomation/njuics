@@ -34,6 +34,7 @@ typedef struct _iringbuf {
     logbuf contents[IRINGBUF_SIZE];
     int next_index;
     int count;
+    int error_index;
 } iringbuf;
 
 CPU_state cpu = {};
@@ -44,6 +45,9 @@ static iringbuf g_iringbuf;
 void device_update();
 extern bool check_wp();
 void append_log_to_iringbuf(const char * log) {
+    if(nemu_state.state == NEMU_ABORT || nemu_state.halt_ret != 0) {
+      g_iringbuf.error_index = g_iringbuf.next_index;
+    }
     strncpy(g_iringbuf.contents[g_iringbuf.next_index].str, log, LOG_SIZE);
     g_iringbuf.count ++;
     g_iringbuf.next_index ++;
@@ -51,9 +55,10 @@ void append_log_to_iringbuf(const char * log) {
         g_iringbuf.next_index = 0;
 }
 static void pring_one_iringbuf_log(int index) {
+    bool is_error = index == g_iringbuf.error_index;
     char * s = g_iringbuf.contents[index].str;
 #ifdef CONFIG_ITRACE_COND
-  if (ITRACE_COND) { log_write("%s\n", s);}
+  if (ITRACE_COND) { log_write(is_error ? "--->%s\n" :"%s\n", s);}
 #endif
   IFDEF(CONFIG_ITRACE, puts(s));
 }
@@ -134,7 +139,7 @@ void assert_fail_msg() {
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
   g_print_step = (n < MAX_INST_TO_PRINT);
-  g_iringbuf.count = g_iringbuf.next_index = 0;
+  g_iringbuf.count = g_iringbuf.next_index = g_iringbuf.error_index = 0;
   switch (nemu_state.state) {
     case NEMU_END: case NEMU_ABORT:
       printf("Program execution has ended. To restart the program, exit NEMU and run again.\n");
