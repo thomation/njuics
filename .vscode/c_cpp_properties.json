@@ -7,7 +7,8 @@
                 "${workspaceFolder}/nemu/include"
             ],
             "defines": [
-                "ITRACE_COND=1"
+                "ITRACE_COND=1",
+                "MTRACE_COND=1"
             ],
             "compilerPath": "/usr/lib/ccache/gcc",
             "cStandard": "gnu17",
