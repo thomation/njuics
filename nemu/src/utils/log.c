@@ -28,6 +28,9 @@ void init_log(const char *log_file) {
   Log("Log is written to %s", log_file ? log_file : "stdout");
 }
 
+void init_elf(const char *elf_file) {
+  Log("Elf is from %s", elf_file ? elf_file : "Error");
+}
 bool log_enable() {
   return MUXDEF(CONFIG_TRACE, (g_nr_guest_inst >= CONFIG_TRACE_START) &&
          (g_nr_guest_inst <= CONFIG_TRACE_END), false);
