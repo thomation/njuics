@@ -1,6 +1,11 @@
 
 #include <common.h>
 #include <elf.h>
+#define SYMBOL_NAME_LEN 16
+#define SYMBOL_NAME_LIST_SIZE 32
+typedef char symbol_name [SYMBOL_NAME_LEN];
+symbol_name g_symbol_name_list[SYMBOL_NAME_LIST_SIZE];
+static int symbol_name_index = 0;
 void parse_symbol_header(FILE *fp, Elf32_Shdr header) {
 
 }
@@ -8,15 +13,17 @@ void parse_string_header(FILE *fp, Elf32_Shdr header) {
   int size = header.sh_size;
   int offset = header.sh_offset;
   fseek(fp, offset, SEEK_SET);
-  char str[128] = {'a', 'b', 'c', '\0'};
   int j = 0;
   for(int i = 0; i < size; i ++) {
     char c = fgetc(fp);
     // Log("%c", c);
-    str[j ++] = c;
+    Assert(symbol_name_index < SYMBOL_NAME_LIST_SIZE, "Symbol overflow");
+    if(j < SYMBOL_NAME_LEN)
+      g_symbol_name_list[symbol_name_index][j ++] = c;
     if(c == '\0') {
       j = 0;
-      Log("str:%s", str);
+      g_symbol_name_list[symbol_name_index][SYMBOL_NAME_LEN - 1] = 0;
+      Log("str:%s", g_symbol_name_list[symbol_name_index]);
     }
   }
 }
