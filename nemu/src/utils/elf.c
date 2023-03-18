@@ -7,7 +7,20 @@ typedef char symbol_name [SYMBOL_NAME_LEN];
 symbol_name g_symbol_name_list[SYMBOL_NAME_LIST_SIZE];
 static int symbol_name_index = 0;
 void parse_symbol_header(FILE *fp, Elf32_Shdr header) {
-
+  int size = header.sh_size / sizeof(Elf32_Sym);
+  Log("There are %d symbols", size);
+  int offset = header.sh_offset;
+  fseek(fp, offset, SEEK_SET);
+  Elf32_Sym sym;
+  for(int i = 0; i < size; i ++) {
+    int ret = fread(&sym, sizeof(Elf32_Sym), 1, fp);
+    if(ret != 1) {
+      Log("Error on parse symbol");
+      continue;
+    }
+    // if(ELF32_ST_TYPE(sym.st_info) == STT_FUNC)
+      Log("symbol:%d, size:%d, type:%d\n", sym.st_name, sym.st_size, ELF32_ST_TYPE(sym.st_info));
+  }
 }
 void parse_string_header(FILE *fp, Elf32_Shdr header) {
   int size = header.sh_size;
