@@ -44,6 +44,8 @@ static bool g_print_step = false;
 static iringbuf g_iringbuf;
 void device_update();
 extern bool check_wp();
+extern char* find_symbol(uint32_t addr);
+
 void append_log_to_iringbuf(const char * log) {
     if(nemu_state.state == NEMU_ABORT || nemu_state.halt_ret != 0) {
       g_iringbuf.error_index = g_iringbuf.next_index;
@@ -62,7 +64,7 @@ static void pring_one_iringbuf_log(int index) {
 #endif
   IFDEF(CONFIG_ITRACE, puts(s));
 }
-void print_iringbuf_log() {
+static void print_iringbuf_log() {
     if(g_iringbuf.count > IRINGBUF_SIZE) {
         for(int i = g_iringbuf.next_index; i < IRINGBUF_SIZE; i ++) {
             pring_one_iringbuf_log(i);
@@ -71,7 +73,23 @@ void print_iringbuf_log() {
     for(int i = 0; i < g_iringbuf.next_index; i ++) {
         pring_one_iringbuf_log(i);
     }
-}static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
+}
+static void trace_func(Decode *_this) {
+  char * code = _this->logbuf + 24;
+  bool is_call = code[0] == 'j' && code[1] == 'a' && code[2] == 'l';
+  if(!is_call)
+    return;
+  vaddr_t addr;
+  // Log("code:%s, addr:%s",code,  code + 4);
+  sscanf(code + 4, "%x", &addr);
+  char * name = find_symbol(addr);
+  if(name != NULL) {
+  #ifdef CONFIG_ITRACE_COND
+    if (ITRACE_COND) { log_write("call %s@%x\n", name, _this->pc); }
+  #endif
+  }
+}
+static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
 #endif
@@ -79,6 +97,7 @@ void print_iringbuf_log() {
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 
   append_log_to_iringbuf(_this->logbuf);
+  trace_func(_this);
 }
 
 static void exec_once(Decode *s, vaddr_t pc) {
