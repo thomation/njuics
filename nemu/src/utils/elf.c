@@ -10,25 +10,13 @@ struct symbol {
   symbol_name name;
   Elf32_Addr addr;
 };
-struct symbol g_symbol_list[SYMBOL_LIST_SIZE];
-int g_symbol_size = 0;
+struct symbol symbol_list[SYMBOL_LIST_SIZE];
+static int symbol_size = 0;
 static Elf32_Shdr symbol_table_header;
 static Elf32_Shdr string_table_headers[STRING_TABLE_COUNT];
 static int string_table_size = 0;
 
-// void print_string_tab(FILE *fp) {
-//   for(int tab = 0; tab < string_table_size; tab ++ ) {
-//     int offset = string_table_headers[tab].sh_offset;
-//     int size = string_table_headers[tab].sh_size;
-//     Log("tab:%d, offset:%d, size:%d", tab, offset, size);
-//     fseek(fp, offset, SEEK_SET);
-//     for(int i = 0; i < size; i ++) {
-//       char c = fgetc(fp);
-//       Log("%d:%c,", i, c);
-//     }
-//   }
-// }
-void find_symbol_string(FILE *fp, int index, symbol_name name) {
+static void find_symbol_string(FILE *fp, int index, symbol_name name) {
   for(int tab = 0; tab < string_table_size; tab ++ ) {
     int size = string_table_headers[tab].sh_size;
     if(size <= index)
@@ -47,7 +35,7 @@ void find_symbol_string(FILE *fp, int index, symbol_name name) {
   }
   name[SYMBOL_NAME_LEN - 1] = '\0';
 }
-void parse_symbol_header(FILE *fp) {
+static void parse_symbol_header(FILE *fp) {
   int size = symbol_table_header.sh_size / sizeof(Elf32_Sym);
   Log("There are %d symbols", size);
   int offset = symbol_table_header.sh_offset;
@@ -60,18 +48,18 @@ void parse_symbol_header(FILE *fp) {
       continue;
     }
     if(ELF32_ST_TYPE(sym.st_info) == STT_FUNC) {
-      Assert(g_symbol_size < SYMBOL_LIST_SIZE, "Symbol overflow");
-      struct symbol * ps = &g_symbol_list[g_symbol_size ++];
+      Assert(symbol_size < SYMBOL_LIST_SIZE, "Symbol overflow");
+      struct symbol * ps = &symbol_list[symbol_size ++];
       ps->addr = sym.st_value;
       ps->string_index = sym.st_name;
     }
   }
 }
-void parse_symbole_name(FILE *fp) {
-  for(int i = 0; i < g_symbol_size; i ++) {
-      struct symbol * ps = &g_symbol_list[i];
+static void parse_symbole_name(FILE *fp) {
+  for(int i = 0; i < symbol_size; i ++) {
+      struct symbol * ps = &symbol_list[i];
       find_symbol_string(fp, ps->string_index, ps->name);
-      Log("symbol %d, sindex:%d, name:%s, addr:%x", i, ps->string_index, ps->name, ps->addr);
+      // Log("symbol %d, sindex:%d, name:%s, addr:%x", i, ps->string_index, ps->name, ps->addr);
   }
 }
 void init_elf(const char *elf_file) {
@@ -107,4 +95,13 @@ void init_elf(const char *elf_file) {
     parse_symbole_name(fp);
     fclose(fp);
   }
+}
+char* find_symbol(uint32_t addr) {
+  for(int i = 0; i < symbol_size; i ++) {
+    struct symbol *ps = &symbol_list[i];
+    if(ps->addr == addr) {
+      return ps->name;
+    }
+  }
+  return NULL;
 }
