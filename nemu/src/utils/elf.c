@@ -37,10 +37,11 @@ void find_symbol_string(FILE *fp, int index, symbol_name name) {
     fseek(fp, offset + index, SEEK_SET);
     for(int i = 0; i < SYMBOL_NAME_LEN; i ++) {
       char c = fgetc(fp);
-      // Log("%c", c);
+      // Log("%c of %d", c, index);
       name[i] = c;
       if(c == '\0') {
-        break;
+        name[SYMBOL_NAME_LEN - 1] = '\0';
+        return;
       }
     }
   }
