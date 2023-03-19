@@ -2,14 +2,36 @@
 #include <common.h>
 #include <elf.h>
 #define SYMBOL_NAME_LEN 16
-#define SYMBOL_NAME_LIST_SIZE 32
+#define SYMBOL_LIST_SIZE 32
 typedef char symbol_name [SYMBOL_NAME_LEN];
-symbol_name g_symbol_name_list[SYMBOL_NAME_LIST_SIZE];
-static int symbol_name_index = 0;
-void parse_symbol_header(FILE *fp, Elf32_Shdr header) {
-  int size = header.sh_size / sizeof(Elf32_Sym);
+struct symbol {
+  Elf32_Word string_index;
+  symbol_name name;
+  Elf32_Addr addr;
+};
+struct symbol g_symbol_list[SYMBOL_LIST_SIZE];
+int g_symbol_size = 0;
+static Elf32_Shdr symbol_table_header;
+static Elf32_Shdr string_table_header;
+
+void find_symbol_string(FILE *fp, int index, symbol_name name) {
+  int offset = string_table_header.sh_offset;
+  Log("offset:%d", offset);
+  fseek(fp, offset + index, SEEK_SET);
+  for(int i = 0; i < SYMBOL_NAME_LEN; i ++) {
+    char c = fgetc(fp);
+    Log("%c", c);
+    name[i] = c;
+    if(c == '\0') {
+      break;
+    }
+  }
+  name[SYMBOL_NAME_LEN - 1] = '\0';
+}
+void parse_symbol_header(FILE *fp) {
+  int size = symbol_table_header.sh_size / sizeof(Elf32_Sym);
   Log("There are %d symbols", size);
-  int offset = header.sh_offset;
+  int offset = symbol_table_header.sh_offset;
   fseek(fp, offset, SEEK_SET);
   Elf32_Sym sym;
   for(int i = 0; i < size; i ++) {
@@ -18,26 +40,19 @@ void parse_symbol_header(FILE *fp, Elf32_Shdr header) {
       Log("Error on parse symbol");
       continue;
     }
-    // if(ELF32_ST_TYPE(sym.st_info) == STT_FUNC)
-      Log("symbol:%d, size:%d, type:%d\n", sym.st_name, sym.st_size, ELF32_ST_TYPE(sym.st_info));
+    if(ELF32_ST_TYPE(sym.st_info) == STT_FUNC) {
+      Assert(g_symbol_size < SYMBOL_LIST_SIZE, "Symbol overflow");
+      struct symbol * ps = &g_symbol_list[g_symbol_size ++];
+      ps->addr = sym.st_value;
+      ps->string_index = sym.st_name;
+    }
   }
 }
-void parse_string_header(FILE *fp, Elf32_Shdr header) {
-  int size = header.sh_size;
-  int offset = header.sh_offset;
-  fseek(fp, offset, SEEK_SET);
-  int j = 0;
-  for(int i = 0; i < size; i ++) {
-    char c = fgetc(fp);
-    // Log("%c", c);
-    Assert(symbol_name_index < SYMBOL_NAME_LIST_SIZE, "Symbol overflow");
-    if(j < SYMBOL_NAME_LEN)
-      g_symbol_name_list[symbol_name_index][j ++] = c;
-    if(c == '\0') {
-      j = 0;
-      g_symbol_name_list[symbol_name_index][SYMBOL_NAME_LEN - 1] = 0;
-      Log("str:%s", g_symbol_name_list[symbol_name_index]);
-    }
+void parse_symbole_name(FILE *fp) {
+  for(int i = 0; i < g_symbol_size; i ++) {
+      struct symbol * ps = &g_symbol_list[i];
+      find_symbol_string(fp, ps->string_index, ps->name);
+      Log("symbol %d, sindex:%d, %s", i, ps->string_index, ps->name);
   }
 }
 void init_elf(const char *elf_file) {
@@ -64,10 +79,12 @@ void init_elf(const char *elf_file) {
         return;
       }
       if(section_header.sh_type == SHT_SYMTAB)
-        parse_symbol_header(fp, section_header);
+        symbol_table_header = section_header;
       else if(section_header.sh_type == SHT_STRTAB)
-        parse_string_header(fp, section_header);
+        string_table_header = section_header;
     }
+    parse_symbol_header(fp);
+    parse_symbole_name(fp);
     fclose(fp);
   }
 }
