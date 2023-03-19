@@ -3,6 +3,7 @@
 #include <elf.h>
 #define SYMBOL_NAME_LEN 16
 #define SYMBOL_LIST_SIZE 32
+#define STRING_TABLE_COUNT 2
 typedef char symbol_name [SYMBOL_NAME_LEN];
 struct symbol {
   Elf32_Word string_index;
@@ -12,18 +13,35 @@ struct symbol {
 struct symbol g_symbol_list[SYMBOL_LIST_SIZE];
 int g_symbol_size = 0;
 static Elf32_Shdr symbol_table_header;
-static Elf32_Shdr string_table_header;
+static Elf32_Shdr string_table_headers[STRING_TABLE_COUNT];
+static int string_table_size = 0;
 
+// void print_string_tab(FILE *fp) {
+//   for(int tab = 0; tab < string_table_size; tab ++ ) {
+//     int offset = string_table_headers[tab].sh_offset;
+//     int size = string_table_headers[tab].sh_size;
+//     Log("tab:%d, offset:%d, size:%d", tab, offset, size);
+//     fseek(fp, offset, SEEK_SET);
+//     for(int i = 0; i < size; i ++) {
+//       char c = fgetc(fp);
+//       Log("%d:%c,", i, c);
+//     }
+//   }
+// }
 void find_symbol_string(FILE *fp, int index, symbol_name name) {
-  int offset = string_table_header.sh_offset;
-  Log("offset:%d", offset);
-  fseek(fp, offset + index, SEEK_SET);
-  for(int i = 0; i < SYMBOL_NAME_LEN; i ++) {
-    char c = fgetc(fp);
-    Log("%c", c);
-    name[i] = c;
-    if(c == '\0') {
-      break;
+  for(int tab = 0; tab < string_table_size; tab ++ ) {
+    int size = string_table_headers[tab].sh_size;
+    if(size <= index)
+      continue;
+    int offset = string_table_headers[tab].sh_offset;
+    fseek(fp, offset + index, SEEK_SET);
+    for(int i = 0; i < SYMBOL_NAME_LEN; i ++) {
+      char c = fgetc(fp);
+      // Log("%c", c);
+      name[i] = c;
+      if(c == '\0') {
+        break;
+      }
     }
   }
   name[SYMBOL_NAME_LEN - 1] = '\0';
@@ -52,7 +70,7 @@ void parse_symbole_name(FILE *fp) {
   for(int i = 0; i < g_symbol_size; i ++) {
       struct symbol * ps = &g_symbol_list[i];
       find_symbol_string(fp, ps->string_index, ps->name);
-      Log("symbol %d, sindex:%d, %s", i, ps->string_index, ps->name);
+      Log("symbol %d, sindex:%d, name:%s, addr:%x", i, ps->string_index, ps->name, ps->addr);
   }
 }
 void init_elf(const char *elf_file) {
@@ -81,8 +99,9 @@ void init_elf(const char *elf_file) {
       if(section_header.sh_type == SHT_SYMTAB)
         symbol_table_header = section_header;
       else if(section_header.sh_type == SHT_STRTAB)
-        string_table_header = section_header;
+        string_table_headers[string_table_size ++] = section_header;
     }
+    // print_string_tab(fp);
     parse_symbol_header(fp);
     parse_symbole_name(fp);
     fclose(fp);
