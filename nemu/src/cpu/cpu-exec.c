@@ -75,27 +75,40 @@ static void print_iringbuf_log() {
     }
 }
 static int call_deep = 0;
+static void print_call_deep() {
+  for(int i = 0; i < call_deep; i ++) 
+    log_write("----");
+}
+void print_call(vaddr_t addr, vaddr_t pc) {
+    char * name = find_symbol(addr);
+    if(name != NULL && ITRACE_COND) {
+        print_call_deep();
+        log_write("call %s@%x\n", name, pc);
+        call_deep ++;
+    }
+}
 static void trace_func(Decode *_this) {
 #ifdef CONFIG_ITRACE_COND
   char * code = _this->logbuf + 24;
-  bool is_call = code[0] == 'j' && code[1] == 'a' && code[2] == 'l';
+  bool is_jal = code[0] == 'j' && code[1] == 'a' && code[2] == 'l';
+  bool is_jalr = code[0] == 'j' && code[1] == 'a' && code[2] == 'l' && code[3] == 'r';
   bool is_ret = code[0] == 'r' && code[1] == 'e' && code[2] == 't';
-  if(is_call) {
+  if(is_jalr) {
+    char reg[5];
+    sscanf(code + 5, "%s", reg);
+    // Log("reg:%s", reg);
+    bool success;
+    word_t v = isa_reg_str2val(reg, &success);
+    if(success)
+      print_call(v, _this->pc);
+  } else if(is_jal) {
     vaddr_t addr;
     // Log("code:%s, addr:%s",code,  code + 4);
     sscanf(code + 4, "%x", &addr);
-    char * name = find_symbol(addr);
-    if(name != NULL && ITRACE_COND) {
-      for(int i = 0; i < call_deep; i ++) 
-        log_write("----");
-      if(is_call) {
-        log_write("call %s@%x\n", name, _this->pc);
-        call_deep ++;
-      }
-    }
+    print_call(addr, _this->pc);
+
   } else if(is_ret && ITRACE_COND) {
-      for(int i = 0; i < call_deep; i ++) 
-        log_write("----");
+      print_call_deep();
       log_write("ret @%x\n", _this->pc);
       call_deep --;
   }
