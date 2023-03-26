@@ -4,10 +4,6 @@
 #include <stdarg.h>
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
-
-int printf(const char *fmt, ...) {
-  panic("Not implemented");
-}
 #define MAX_INT_STR_LEN 32
 int uint_to_str(unsigned int n, char * str)
 {
@@ -45,6 +41,47 @@ int int_to_str(int n, char * str)
   }
   str[j] = '\0';
   return j;
+}
+int dovsprintf(void(*putchar)(char), const char *fmt, va_list ap) {
+  int out = 0;
+  while(*fmt) {
+    if(*fmt == '%') {
+      fmt ++;
+      switch(*fmt ++) {
+        case 'd':{
+          char tmp[32];
+          int d = va_arg(ap, int);
+          int len = int_to_str(d, tmp);
+          out += len;
+          for(int i = 0; i < len; i ++)
+            putchar(tmp[i]);
+        }
+        break;
+        case 's': {
+          char *s = va_arg(ap, char*);
+          int len = strlen(s);
+          out += len;
+          for(int i = 0; i < len; i ++)
+            putchar(s[i]);
+        }
+        break;
+        default:
+          panic("Unsupported");
+      }
+    }
+    else{
+      putchar(*fmt ++);
+      out ++;
+    }
+  }
+  return out;
+}
+int printf(const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  int ret = dovsprintf(putch, fmt, ap);
+  va_end(ap);
+  return ret;
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
