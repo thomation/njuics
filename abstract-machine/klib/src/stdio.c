@@ -42,8 +42,17 @@ int int_to_str(int n, char * str)
   str[j] = '\0';
   return j;
 }
-int dovsprintf(void(*putchar)(char), const char *fmt, va_list ap) {
-  int out = 0;
+#define PUTCHARTO(out, c) \
+  do { \
+    if(out == NULL) { \
+      putch(c); \
+    } else { \
+      *out ++ = (c); \
+    } \
+  } while(0) 
+
+int vsprintf(char* out, const char *fmt, va_list ap) {
+  int count = 0;
   while(*fmt) {
     if(*fmt == '%') {
       fmt ++;
@@ -52,17 +61,17 @@ int dovsprintf(void(*putchar)(char), const char *fmt, va_list ap) {
           char tmp[32];
           int d = va_arg(ap, int);
           int len = int_to_str(d, tmp);
-          out += len;
+          count += len;
           for(int i = 0; i < len; i ++)
-            putchar(tmp[i]);
+            PUTCHARTO(out, tmp[i]);
         }
         break;
         case 's': {
           char *s = va_arg(ap, char*);
           int len = strlen(s);
-          out += len;
+          count += len;
           for(int i = 0; i < len; i ++)
-            putchar(s[i]);
+            PUTCHARTO(out, s[i]);
         }
         break;
         default:
@@ -70,45 +79,18 @@ int dovsprintf(void(*putchar)(char), const char *fmt, va_list ap) {
       }
     }
     else{
-      putchar(*fmt ++);
-      out ++;
+      PUTCHARTO(out, *fmt ++);
+      count ++;
     }
   }
-  return out;
+  return count;
 }
 int printf(const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
-  int ret = dovsprintf(putch, fmt, ap);
+  int ret = vsprintf(NULL, fmt, ap);
   va_end(ap);
   return ret;
-}
-
-int vsprintf(char *out, const char *fmt, va_list ap) {
-  char * cur = out;
-  while(*fmt) {
-    if(*fmt == '%') {
-      fmt ++;
-      switch(*fmt ++) {
-        case 'd':
-          int d = va_arg(ap, int);
-          int len = int_to_str(d, cur);
-          cur += len;
-        break;
-        case 's':
-          char *s = va_arg(ap, char*);
-          strcpy(cur, s);
-          cur += strlen(s);
-        break;
-        default:
-          panic("Unsupported");
-      }
-    }
-    else{
-      *cur ++ = *fmt ++;
-    }
-  }
-  return cur - out;
 }
 
 int sprintf(char *out, const char *fmt, ...) {
