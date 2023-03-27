@@ -11,5 +11,9 @@ int main(const char *args) {
     (*p == '%') ? putstr(args) : putch(*p);
   } 
   printf("Hello world\n");
+  printf("%d\n", 123);
+  printf("%3d\n", 123);
+  printf("%4d\n", 123);
+  printf("%05d\n", 123);
   return 0;
 }

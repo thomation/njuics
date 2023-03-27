@@ -47,6 +47,15 @@ int int_to_str(int n, char * str)
   str[j] = '\0';
   return j;
 }
+int str_to_int(char* str) {
+  int ret = 0;
+  while(*str != '\0')
+  {
+    ret *= 10;
+    ret += *str ++ - '0';
+  }
+  return ret; 
+}
 #define PUTCHARTO(out, c) \
   do { \
     if(out == NULL) { \
@@ -58,15 +67,34 @@ int int_to_str(int n, char * str)
 
 int vsprintf(char* out, const char *fmt, va_list ap) {
   int count = 0;
+  char prefix[8];
   while(*fmt) {
     if(*fmt == '%') {
       fmt ++;
+      int pi = 0;
+      while(*fmt >= '0' && *fmt <= '9') {
+        prefix[pi ++] = *fmt ++;
+      }
+      prefix[pi] = '\0';
       switch(*fmt ++) {
         case 'd':{
           char tmp[32];
           int d = va_arg(ap, int);
           int len = int_to_str(d, tmp);
-          count += len;
+          int min_len = len;
+          char pad = ' ';
+          if(pi > 0) {
+            if(prefix[0] >= '1' && prefix[0] <= '9') {
+              min_len = str_to_int(prefix);
+            } else {
+              pad = prefix[0];
+              min_len = str_to_int(prefix + 1);
+            }
+          }
+          count += min_len > len ? min_len : len;
+          for(int i = len; i < min_len; i ++) {
+            PUTCHARTO(out, pad);
+          }
           for(int i = 0; i < len; i ++)
             PUTCHARTO(out, tmp[i]);
         }
