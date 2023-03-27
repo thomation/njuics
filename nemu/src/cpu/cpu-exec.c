@@ -57,9 +57,9 @@ void append_log_to_iringbuf(const char * log) {
         g_iringbuf.next_index = 0;
 }
 static void pring_one_iringbuf_log(int index) {
+#ifdef CONFIG_ITRACE_COND
     bool is_error = index == g_iringbuf.error_index;
     char * s = g_iringbuf.contents[index].str;
-#ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write(is_error ? "--->%s\n" :"%s\n", s);}
 #endif
   IFDEF(CONFIG_ITRACE, puts(s));
@@ -118,11 +118,10 @@ static void trace_func(Decode *_this) {
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
+  append_log_to_iringbuf(_this->logbuf);
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
-
-  append_log_to_iringbuf(_this->logbuf);
   trace_func(_this);
 }
 
