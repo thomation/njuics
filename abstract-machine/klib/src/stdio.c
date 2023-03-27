@@ -24,6 +24,11 @@ int uint_to_str(unsigned int n, char * str)
 }
 int int_to_str(int n, char * str)
 {
+  if(n == 0) {
+    str[0] = '0';
+    str[1] = '\0';
+    return 1;
+  }
   if(n > 0)
     return uint_to_str(n, str);
   char tmp[MAX_INT_STR_LEN];
