@@ -26,9 +26,10 @@ void Proc_5 () /* without parameters */
   Bool_Glob = false;
 } /* Proc_5 */
 
-void main()
+int main()
 {
     Proc_5();
     Proc_4();
     check(Bool_Glob == 1);
+    return 0;
 }
