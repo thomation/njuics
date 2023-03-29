@@ -840,7 +840,6 @@ int main ()
       Proc_2 (&Int_1_Loc);
 	/* Int_1_Loc == 5 */
 
-    Stop_Timer();
     } /* loop "for Run_Index" */
 
     /**************/
