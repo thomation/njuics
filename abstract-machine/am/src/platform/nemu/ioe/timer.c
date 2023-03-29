@@ -13,8 +13,8 @@ void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime) {
   uint32_t new_time[2];
   new_time[0] = inl(RTC_ADDR);
   new_time[1] = inl(RTC_ADDR + 4);
-  uint32_t s = new_time[1] - boot_time[1];
-  uptime->us = s * 1000000 + (new_time[0] - boot_time[0] + 500);
+  uint64_t s = new_time[1] - boot_time[1];
+  uptime->us = (s << 32)  + (new_time[0] - boot_time[0] + 500);
   // printf("time:%d, %d\n", new_time[0], new_time[1]);
 }
 
