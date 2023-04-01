@@ -56,15 +56,24 @@ int str_to_int(char* str) {
   }
   return ret; 
 }
-#define PUTCHARTO(out, c) \
-  do { \
-    if(out == NULL) { \
-      putch(c); \
-    } else { \
-      *out ++ = (c); \
-    } \
-  } while(0) 
-
+int handle_number(char *out, char*in, int len, char* prefix, int pi) {
+    int min_len = len;
+    char pad = ' ';
+    if(pi > 0) {
+      if(prefix[0] >= '1' && prefix[0] <= '9') {
+        min_len = str_to_int(prefix);
+      } else {
+        pad = prefix[0];
+        min_len = str_to_int(prefix + 1);
+      }
+    }
+    for(int i = len; i < min_len; i ++) {
+      if(out == NULL) putch(pad); else *out++ = pad;
+    }
+    for(int i = 0; i < len; i ++)
+      if(out == NULL) putch(in[i]); else *out++ = in[i];
+    return min_len > len ? min_len : len;
+  }
 int vsprintf(char* out, const char *fmt, va_list ap) {
   int count = 0;
   char prefix[8];
@@ -77,34 +86,22 @@ int vsprintf(char* out, const char *fmt, va_list ap) {
       }
       prefix[pi] = '\0';
       switch(*fmt ++) {
-        case 'd':{
+        case 'd':
           char tmp[32];
           int d = va_arg(ap, int);
           int len = int_to_str(d, tmp);
-          int min_len = len;
-          char pad = ' ';
-          if(pi > 0) {
-            if(prefix[0] >= '1' && prefix[0] <= '9') {
-              min_len = str_to_int(prefix);
-            } else {
-              pad = prefix[0];
-              min_len = str_to_int(prefix + 1);
-            }
-          }
-          count += min_len > len ? min_len : len;
-          for(int i = len; i < min_len; i ++) {
-            PUTCHARTO(out, pad);
-          }
-          for(int i = 0; i < len; i ++)
-            PUTCHARTO(out, tmp[i]);
-        }
+          int n = handle_number(out, tmp, len, prefix, pi);
+          count += n; 
+          if(out != NULL) out += n;
+        break;
+        case 'x':
         break;
         case 's': {
           char *s = va_arg(ap, char*);
           int len = strlen(s);
           count += len;
           for(int i = 0; i < len; i ++)
-            PUTCHARTO(out, s[i]);
+            if(out == NULL) putch(s[i]); else *out ++ = s[i];
         }
         break;
         default:
@@ -112,10 +109,11 @@ int vsprintf(char* out, const char *fmt, va_list ap) {
       }
     }
     else{
-      PUTCHARTO(out, *fmt ++);
+      if(out == NULL) putch(*fmt ++); else *out ++ = *fmt++;
       count ++;
     }
   }
+  if(out != NULL) *out = '\0';
   return count;
 }
 int printf(const char *fmt, ...) {
