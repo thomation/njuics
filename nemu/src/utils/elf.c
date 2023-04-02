@@ -2,7 +2,7 @@
 #include <common.h>
 #include <elf.h>
 #define SYMBOL_NAME_LEN 16
-#define SYMBOL_LIST_SIZE 512
+#define SYMBOL_LIST_SIZE 2048
 #define STRING_TABLE_COUNT 2
 typedef char symbol_name [SYMBOL_NAME_LEN];
 struct symbol {
