@@ -1,5 +1,6 @@
 #include <am.h>
 #include <nemu.h>
+#include <klib.h>
 
 #define SYNC_ADDR (VGACTL_ADDR + 4)
 #define SIZE_ADDR VGACTL_ADDR
@@ -16,13 +17,6 @@ static uint32_t screen_height() {
   return h;
 }
 void __am_gpu_init() {
-  int i;
-  uint32_t w = screen_width();
-  uint32_t h = screen_height();
-  uint32_t *fb = (uint32_t *)(uintptr_t)FB_ADDR;
-  for (i = 0; i < w * h / 2; i ++) fb[i] = 0x00ff0000;
-  for (i = w * h / 2; i < w * h; i ++) fb[i] = 0x0000ff00;
-  outl(SYNC_ADDR, 1);
 }
 
 void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
@@ -34,6 +28,24 @@ void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
 }
 
 void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
+  int w = ctl->w, h = ctl->h;
+  if (w == 0 || h == 0) {
+    if (ctl->sync) {
+      outl(SYNC_ADDR, 1);
+    }
+    return;
+  }
+  int x = ctl->x, y = ctl->y;
+  uint32_t * p = ctl->pixels;
+  uint32_t size_w = screen_width();
+  uint32_t *fb = (uint32_t *)(uintptr_t)FB_ADDR;
+  for(int j = 0; j < h; j ++) {
+    for(int i = 0; i < w; i ++) {
+      int pi = j * w + i;
+      int si = (j + y) * size_w + i + x;
+      fb[si] = p[pi];
+    }
+  }
   if (ctl->sync) {
     outl(SYNC_ADDR, 1);
   }
