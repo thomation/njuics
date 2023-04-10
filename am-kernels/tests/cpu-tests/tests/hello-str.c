@@ -34,6 +34,8 @@ int main() {
 	check(strcmp(buf, "2 + 10 = 12\n") == 0);
 	sprintf(buf, "%x,%x,%x,%x\n", 0, 1, 15, 16);
 	check(strcmp(buf, "0x0,0x1,0xf,0x10\n") == 0);
+	int a = 123;
+	printf("%p\n", &a);
 
 	return 0;
 }
