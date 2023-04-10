@@ -32,6 +32,8 @@ int main() {
 
 	sprintf(buf, "%d + %d = %d\n", 2, 10, 12);
 	check(strcmp(buf, "2 + 10 = 12\n") == 0);
+	sprintf(buf, "%x,%x,%x,%x\n", 0, 1, 15, 16);
+	check(strcmp(buf, "0x0,0x1,0xf,0x10\n") == 0);
 
 	return 0;
 }

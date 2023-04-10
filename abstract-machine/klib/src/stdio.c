@@ -47,6 +47,28 @@ int int_to_str(int n, char * str)
   str[j] = '\0';
   return j;
 }
+int hex_to_str(unsigned int n, char * str)
+{
+  char tmp[MAX_INT_STR_LEN];
+  int i = 0;
+  while(n > 0)
+  {
+    int v = n % 16;
+    tmp[i ++] =  v >= 10 ? v - 10 + 'a' : v + '0';
+    n /= 16;
+  }
+  str[0] = '0';
+  str[1] = 'x';
+  int j = 2;
+  if(i == 0)
+    str[j++] = '0';
+  while(i > 0)
+  {
+    str[j++] = tmp[--i];
+  }
+  str[j] = '\0';
+  return j;
+}
 int str_to_int(char* str) {
   int ret = 0;
   while(*str != '\0')
@@ -87,14 +109,25 @@ int vsprintf(char* out, const char *fmt, va_list ap) {
       prefix[pi] = '\0';
       switch(*fmt ++) {
         case 'd':
+        {
           char tmp[32];
           int d = va_arg(ap, int);
           int len = int_to_str(d, tmp);
           int n = handle_number(out, tmp, len, prefix, pi);
           count += n; 
           if(out != NULL) out += n;
+        }
         break;
         case 'x':
+        case 'p':
+        {
+          char tmp[32];
+          int d = va_arg(ap, int);
+          int len = hex_to_str(d, tmp);
+          int n = handle_number(out, tmp, len, prefix, pi);
+          count += n; 
+          if(out != NULL) out += n;
+        }
         break;
         case 's': {
           char *s = va_arg(ap, char*);
