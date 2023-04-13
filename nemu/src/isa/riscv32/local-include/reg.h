@@ -22,8 +22,13 @@ static inline int check_reg_idx(int idx) {
   IFDEF(CONFIG_RT_CHECK, assert(idx >= 0 && idx < 32));
   return idx;
 }
+static inline int check_sreg_idx(int idx) {
+  IFDEF(CONFIG_RT_CHECK, assert(idx >= 0 && idx < 8));
+  return idx;
+}
 
 #define gpr(idx) cpu.gpr[check_reg_idx(idx)]
+#define sr(idx) cpu.sr[check_sreg_index(idx)]
 
 static inline const char* reg_name(int idx, int width) {
   extern const char* regs[];
