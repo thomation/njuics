@@ -28,7 +28,7 @@ static inline int check_sreg_idx(int idx) {
 }
 
 #define gpr(idx) cpu.gpr[check_reg_idx(idx)]
-#define sr(idx) cpu.sr[check_sreg_index(idx)]
+#define sr(idx) cpu.sr[check_sreg_idx(idx)]
 
 static inline const char* reg_name(int idx, int width) {
   extern const char* regs[];
