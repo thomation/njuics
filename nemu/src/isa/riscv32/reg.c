@@ -22,15 +22,19 @@ const char *regs[] = {
   "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
   "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
-const char *sregs[] = {
-  "mtvec", "mepc", "mcause", "mie", "mip", "mtval", "mscratch", "mstatus",
+struct sreg {
+  uint32_t idx;
+  char * name;
+};
+struct sreg sregs[] = {
+  {0x305, "mtvec"}
 };
 
 static int regs_count() {
   return sizeof(regs) / sizeof(const char*);
 }
 static int sregs_count() {
-  return sizeof(sregs) / sizeof(const char*);
+  return sizeof(sregs) / sizeof(struct sreg);
 }
 void isa_reg_display() {
   printf("General Registers ========================\n");
@@ -44,7 +48,7 @@ void isa_reg_display() {
   printf("\nCSR ========================\n");
   len = sregs_count();
   for(int i = 0; i < len; i ++ ) {
-    printf("%s: 0x%08x, \t", sregs[i], cpu.sr[i]);
+    printf("%s: 0x%08x, \t", sregs[i].name, cpu.sr[sregs[i].idx]);
   }
   printf("\n========================\n");
 }

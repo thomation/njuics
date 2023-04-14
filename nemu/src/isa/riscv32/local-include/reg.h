@@ -23,7 +23,7 @@ static inline int check_reg_idx(int idx) {
   return idx;
 }
 static inline int check_sreg_idx(int idx) {
-  IFDEF(CONFIG_RT_CHECK, assert(idx >= 0 && idx < 8));
+  IFDEF(CONFIG_RT_CHECK, assert(idx >= 0 && idx < 4096));
   return idx;
 }
 

@@ -20,7 +20,7 @@
 
 typedef struct {
   word_t gpr[32];
-  word_t sr[8];
+  word_t sr[4096];
   vaddr_t pc;
 } riscv32_CPU_state;
 
