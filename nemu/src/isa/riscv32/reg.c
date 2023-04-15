@@ -67,6 +67,13 @@ word_t isa_reg_str2val(const char *s, bool *success) {
       return cpu.gpr[i];
     }
   }
+  len = sregs_count();
+  for(int i = 0; i < len; i ++) {
+    if(strcmp(s, sregs[i].name) == 0) {
+      *success = true;
+      return cpu.sr[sregs[i].idx];
+    }
+  }
   *success = false;
   return 0;
 }
