@@ -20,9 +20,9 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
    * Then return the address of the interrupt/exception vector.
    */
   // TODO: these value should not saved in cpu?
-  cpu.sr[0x341] = epc;
-  cpu.sr[0x342] = NO; 
-  return cpu.sr[0x305];
+  cpu.mepc = epc;
+  cpu.mcause= NO; 
+  return cpu.mtvec;
 }
 
 word_t isa_query_intr() {
