@@ -15,6 +15,7 @@ Context* __am_irq_handle(Context *c) {
     // printf("mstatus:%x\n", c->mstatus);
     // printf("mepc:%x\n", c->mepc);
     switch (c->mcause) {
+      case -1: ev.event = EVENT_YIELD; break;
       default: ev.event = EVENT_ERROR; break;
     }
 
