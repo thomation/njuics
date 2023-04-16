@@ -27,6 +27,7 @@ struct sreg {
   char * name;
 };
 struct sreg sregs[] = {
+  {0x300, "mstatus"},
   {0x305, "mtvec"},
   {0x341, "mepc"},
   {0x342, "mcause"},
