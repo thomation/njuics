@@ -10,6 +10,7 @@
                 "ITRACE_COND=1",
                 "MTRACE_COND=1",
                 "DTRACE_COND=1",
+                "ETRACE_COND=1",
                 "ARCH_H=\"arch/native.h\""
             ],
             "compilerPath": "/usr/lib/ccache/gcc",
