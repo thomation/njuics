@@ -9,6 +9,7 @@
 # define Elf_Phdr Elf32_Phdr
 #endif
 
+extern uint8_t ramdisk_start;
 extern size_t ramdisk_read(void *buf, size_t offset, size_t len); 
 static uintptr_t loader(PCB *pcb, const char *filename) {
   if(filename != NULL)
@@ -21,7 +22,9 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
           elf_header.e_ident[EI_MAG1] == ELFMAG1 &&
           elf_header.e_ident[EI_MAG2] == ELFMAG2 &&
           elf_header.e_ident[EI_MAG3] == ELFMAG3) {
-    return elf_header.e_entry;
+    uintptr_t start = (uintptr_t)&ramdisk_start;
+    Log("start:%p, entry:%x\n", start, elf_header.e_entry);
+    return start + (elf_header.e_entry - 0x830000b4);
   } else {
     Log("Invalid elf file\n");
     return 0;
