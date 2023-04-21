@@ -24,7 +24,17 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
           elf_header.e_ident[EI_MAG3] == ELFMAG3) {
     uintptr_t start = (uintptr_t)&ramdisk_start;
     Log("start:%p, entry:%x\n", start, elf_header.e_entry);
-    return start + (elf_header.e_entry - 0x83000000);
+    Elf_Phdr elf_program_header;
+
+    for(int i = 0; i < elf_header.e_phnum; i ++) {
+      ramdisk_read(&elf_program_header, elf_header.e_phoff + i * elf_header.e_phentsize,elf_header.e_phentsize);
+      if(elf_program_header.p_type == PT_LOAD && elf_program_header.p_flags == (PF_R|PF_X)) {
+        uintptr_t addr = elf_program_header.p_vaddr;
+        return start + (elf_header.e_entry - addr);
+      }
+    }
+    printf("No program header of exec\n");
+    return 0;
   } else {
     Log("Invalid elf file\n");
     return 0;
