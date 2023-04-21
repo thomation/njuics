@@ -24,7 +24,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
           elf_header.e_ident[EI_MAG3] == ELFMAG3) {
     uintptr_t start = (uintptr_t)&ramdisk_start;
     Log("start:%p, entry:%x\n", start, elf_header.e_entry);
-    return start + (elf_header.e_entry - 0x830000b4);
+    return start + (elf_header.e_entry - 0x83000000);
   } else {
     Log("Invalid elf file\n");
     return 0;
