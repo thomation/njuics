@@ -88,6 +88,7 @@ void print_call(vaddr_t addr, vaddr_t pc) {
     }
 }
 static void trace_func(Decode *_this) {
+  return;
 #ifdef CONFIG_ITRACE_COND
   char * code = _this->logbuf + 24;
   bool is_jal = code[0] == 'j' && code[1] == 'a' && code[2] == 'l';
