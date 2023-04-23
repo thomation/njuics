@@ -11,6 +11,10 @@
 
 extern uint8_t ramdisk_start;
 extern size_t ramdisk_read(void *buf, size_t offset, size_t len); 
+static void load_segment(size_t offset, uint8_t * vaddr, size_t file_size, size_t mem_size) {
+    memcpy(vaddr, &ramdisk_start + offset, file_size);
+    memset(vaddr + file_size, 0, mem_size - file_size);
+}
 static uintptr_t loader(PCB *pcb, const char *filename) {
   if(filename != NULL)
     Log("Start load %s\n", filename);
@@ -25,16 +29,14 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
     uintptr_t start = (uintptr_t)&ramdisk_start;
     Log("start:%p, entry:%x\n", start, elf_header.e_entry);
     Elf_Phdr elf_program_header;
-
+    // TODO: Copy all byts of segment of LOAD to memory.
     for(int i = 0; i < elf_header.e_phnum; i ++) {
       ramdisk_read(&elf_program_header, elf_header.e_phoff + i * elf_header.e_phentsize,elf_header.e_phentsize);
-      if(elf_program_header.p_type == PT_LOAD && elf_program_header.p_flags == (PF_R|PF_X)) {
-        uintptr_t addr = elf_program_header.p_vaddr;
-        return start + (elf_header.e_entry - addr);
+      if(elf_program_header.p_type == PT_LOAD) {
+        load_segment(elf_program_header.p_offset, (uint8_t*)elf_program_header.p_vaddr, elf_program_header.p_filesz, elf_program_header.p_memsz);
       }
     }
-    printf("No program header of exec\n");
-    return 0;
+    return elf_header.e_entry;
   } else {
     Log("Invalid elf file\n");
     return 0;
