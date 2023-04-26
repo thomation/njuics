@@ -9,7 +9,7 @@ void do_syscall(Context *c) {
   a[1] = c->GPR2;
   a[2] = c->GPR3;
   a[3] = c->GPR4;
-  printf("System Call: type:%d, a1:%p, a2:%p, a3:%p\n", a[0], a[1], a[2], a[3]);
+  // printf("System Call: type:%d, a1:%p, a2:%p, a3:%p\n", a[0], a[1], a[2], a[3]);
   switch (a[0]) {
     case SYS_yield:
       c->GPRx = sys_yield();
