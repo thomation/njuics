@@ -38,6 +38,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
     Log("Cannot open file:%s\n", filename);
     return 0;
   }
+  Log("fd = %d of file:%s\n", fd, filename);
 
   Elf_Ehdr elf_header;
   fs_read(fd, &elf_header, sizeof(Elf_Ehdr));
