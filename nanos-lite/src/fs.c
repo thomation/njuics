@@ -63,13 +63,13 @@ size_t fs_lseek(int fd, size_t offset, int whence) {
   Finfo * e = &file_table[fd];
   switch(whence) {
     case SEEK_SET:
-      e->open_offset = e->disk_offset + offset;
+      e->open_offset = offset;
       break;
     case SEEK_CUR:
       e->open_offset += offset;
       break;
     case SEEK_END:
-      e->open_offset = e->disk_offset + e->size + offset;
+      e->open_offset = e->size + offset;
       break;
   }
   return e->open_offset;
