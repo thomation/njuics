@@ -60,8 +60,11 @@ size_t fs_read(int fd, void *buf, size_t len) {
   return ret;
 }
 size_t fs_write(int fd, const void *buf, size_t len) {
-  panic("no inplement;");
-  return 0;
+  Finfo * e = &file_table[fd];
+  size_t ret = e->write(buf, e->disk_offset + e->open_offset, len);
+  if(ret > 0)
+    e->open_offset += ret;
+  return ret;
 }
 size_t fs_lseek(int fd, size_t offset, int whence) {
   Finfo * e = &file_table[fd];

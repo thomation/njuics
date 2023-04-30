@@ -16,7 +16,7 @@ void do_syscall(Context *c) {
   a[1] = c->GPR2;
   a[2] = c->GPR3;
   a[3] = c->GPR4;
-  printf("System Call: type:%d, a1:%p, a2:%p, a3:%p\n", a[0], a[1], a[2], a[3]);
+  // printf("System Call: type:%d, a1:%p, a2:%p, a3:%p\n", a[0], a[1], a[2], a[3]);
   switch (a[0]) {
     case SYS_exit:
       c->GPRx = sys_exit();
@@ -44,6 +44,7 @@ void do_syscall(Context *c) {
       break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
+  // printf("System Call: return:%d\n", c->GPRx);
 }
 
 int sys_exit()
@@ -64,7 +65,8 @@ int sys_read(int fd, void * buf, size_t len) {
 }
 int sys_write(int fd, void* buf, size_t len) {
   uint8_t *str = buf;
-  if(fd == 1) {
+  // output and error
+  if(fd == 1 || fd == 2) { 
     for(int i = 0; i < len; i ++) {
       putch(str[i]);
     }
