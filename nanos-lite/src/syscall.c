@@ -64,14 +64,6 @@ int sys_read(int fd, void * buf, size_t len) {
   return fs_read(fd, buf, len);
 }
 int sys_write(int fd, void* buf, size_t len) {
-  uint8_t *str = buf;
-  // output and error
-  if(fd == 1 || fd == 2) { 
-    for(int i = 0; i < len; i ++) {
-      putch(str[i]);
-    }
-    return len;
-  }
   return fs_write(fd, buf, len);
 }
 int sys_close(int fd) {
