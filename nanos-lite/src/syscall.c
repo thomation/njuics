@@ -10,6 +10,7 @@ int sys_write(int fd, void * buf, size_t len);
 int sys_close(int fd);
 int sys_lseek(int fd, int offset, int whence);
 int sys_brk(void * addr);
+int sys_gettimeofday(void * tv, void * tz);
 void do_syscall(Context *c) {
   uintptr_t a[4];
   a[0] = c->GPR1;
@@ -42,6 +43,9 @@ void do_syscall(Context *c) {
     case SYS_brk:
       c->GPRx = sys_brk((void*)a[1]);
       break;
+    case SYS_gettimeofday:
+      c->GPRx = sys_gettimeofday((void*)a[1], (void*)a[2]);
+      break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
   // printf("System Call: return:%d\n", c->GPRx);
@@ -73,5 +77,8 @@ int sys_lseek(int fd, int offset, int whence) {
   return fs_lseek(fd, offset, whence);
 }
 int sys_brk(void * addr) {
+  return 0;
+}
+int sys_gettimeofday(void *tv, void *tz) {
   return 0;
 }
