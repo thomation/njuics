@@ -12,7 +12,7 @@ int main() {
             return -1;
         }
         if(tv.tv_sec > last_tv.tv_sec || tv.tv_usec - last_tv.tv_usec > 500) {
-            printf("Get time of day \n");
+            printf("Get time of day:%u-%d\n", tv.tv_sec, tv.tv_usec);
             last_tv = tv;
         }
     }
