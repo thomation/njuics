@@ -14,6 +14,11 @@ static const char *keyname[256] __attribute__((used)) = {
   AM_KEYS(NAME)
 };
 
+struct timevalue {
+  uint32_t s;
+  uint32_t ms;
+};
+
 size_t serial_write(const void *buf, size_t offset, size_t len) {
   const char * str = buf;
   for(int i = 0; i < len; i ++) {
@@ -31,6 +36,13 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
 }
 
 size_t fb_write(const void *buf, size_t offset, size_t len) {
+  return 0;
+}
+int gettimeofday(void * tv, void * tz) {
+  struct timevalue *_tv = (struct timevalue*)tv;
+  uint32_t t = io_read(AM_TIMER_UPTIME).us / 1000;
+  _tv->s = t / 1000;
+  _tv->ms = t % 1000;
   return 0;
 }
 

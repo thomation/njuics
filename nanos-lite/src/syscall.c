@@ -1,7 +1,6 @@
 #include <common.h>
 #include "syscall.h"
 #include <fs.h>
-
 int sys_exit();
 int sys_yield();
 int sys_open(const char * path, int flags, int mode);
@@ -10,6 +9,7 @@ int sys_write(int fd, void * buf, size_t len);
 int sys_close(int fd);
 int sys_lseek(int fd, int offset, int whence);
 int sys_brk(void * addr);
+extern int gettimeofday(void * tv, void * tz);
 int sys_gettimeofday(void * tv, void * tz);
 void do_syscall(Context *c) {
   uintptr_t a[4];
@@ -80,5 +80,5 @@ int sys_brk(void * addr) {
   return 0;
 }
 int sys_gettimeofday(void *tv, void *tz) {
-  return 0;
+  return gettimeofday(tv, tz);
 }
