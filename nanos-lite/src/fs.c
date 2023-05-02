@@ -3,6 +3,7 @@
 extern size_t ramdisk_read(void *buf, size_t offset, size_t len);
 extern size_t ramdisk_write(const void *buf, size_t offset, size_t len);
 extern size_t serial_write(const void *buf, size_t offset, size_t len);
+extern size_t events_read(void *buf, size_t offset, size_t len); 
 
 typedef size_t (*ReadFn) (void *buf, size_t offset, size_t len);
 typedef size_t (*WriteFn) (const void *buf, size_t offset, size_t len);
@@ -34,16 +35,11 @@ static Finfo file_table[] __attribute__((used)) = {
   [FD_STDOUT] = {"stdout", 0, 0, 0, invalid_read, serial_write},
   [FD_STDERR] = {"stderr", 0, 0, 0, invalid_read, serial_write},
 #include "files.h"
+  {"/dev/events", 0, 0, 0, events_read, invalid_write},
 };
 #define FILE_TABLE_SIZE sizeof(file_table) / sizeof(Finfo)
 void init_fs() {
   // TODO: initialize the size of /dev/fb
-  for(int i = 3; i < FILE_TABLE_SIZE; i++) {
-    Finfo *e = &file_table[i];
-    e->open_offset = 0;
-    e->read = ramdisk_read;
-    e->write = ramdisk_write;
-  }
 }
 int fs_open(const char *pathname, int flags, int mode) {
   for(int i = 0; i < FILE_TABLE_SIZE; i ++) {
@@ -54,17 +50,25 @@ int fs_open(const char *pathname, int flags, int mode) {
   return -1;
 }
 size_t fs_read(int fd, void *buf, size_t len) {
+  size_t ret = 0;
   Finfo * e = &file_table[fd];
-  size_t ret = e->read(buf, e->disk_offset + e->open_offset, len);
-  if(ret > 0)
+  if(e->read != NULL) {
+    ret = e->read(buf, e->disk_offset + e->open_offset, len);
+  } else {
+    ret = ramdisk_read(buf, e->disk_offset + e->open_offset, len);
     e->open_offset += ret;
+  }
   return ret;
 }
 size_t fs_write(int fd, const void *buf, size_t len) {
   Finfo * e = &file_table[fd];
-  size_t ret = e->write(buf, e->disk_offset + e->open_offset, len);
-  if(ret > 0)
+  size_t ret = 0;
+  if(e->write != NULL) {
+    ret = e->write(buf, e->disk_offset + e->open_offset, len);
+  } else {
+    ret = ramdisk_write(buf, e->disk_offset + e->open_offset, len);
     e->open_offset += ret;
+  }
   return ret;
 }
 size_t fs_lseek(int fd, size_t offset, int whence) {

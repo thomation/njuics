@@ -9,6 +9,10 @@ static int evtdev = -1;
 static int fbdev = -1;
 static int screen_w = 0, screen_h = 0;
 static struct timeval start_tv = {0, 0};
+static int events_fd = -1;
+
+extern int open(const char *path, int flags, ...);
+
 uint32_t NDL_GetTicks() {
   struct timeval tv;
   struct timezone tz;
@@ -21,7 +25,9 @@ uint32_t NDL_GetTicks() {
 }
 
 int NDL_PollEvent(char *buf, int len) {
-  return 0;
+  if(events_fd < 0)
+    return 0;
+  return read(events_fd, buf, len);
 }
 
 void NDL_OpenCanvas(int *w, int *h) {
@@ -68,11 +74,19 @@ int NDL_Init(uint32_t flags) {
   struct timezone tz;
   int ret = gettimeofday(&start_tv, &tz);
   if(ret < 0) {
-      printf("Error on get time of day \n");
-      return -1;
+    printf("Error on get time of day.\n");
+    return -1;
   }
+  events_fd = open("/dev/events", 0, 0);
+  if(events_fd < 0) {
+    printf("Error on open /dev/events\n");
+    return -1;
+  }
+  printf("fd of /dev/events is %d\n", events_fd);
   return 0;
 }
 
 void NDL_Quit() {
+  // if(events_fd > 0)
+  //   close(events_fd);
 }
