@@ -3,13 +3,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 static int evtdev = -1;
 static int fbdev = -1;
 static int screen_w = 0, screen_h = 0;
-
+static struct timeval start_tv = {0, 0};
 uint32_t NDL_GetTicks() {
-  return 0;
+  struct timeval tv;
+  struct timezone tz;
+  int ret = gettimeofday(&tv, &tz);
+  if(ret < 0) {
+      printf("Error on get time of day \n");
+      return 0;
+  }
+  return (tv.tv_sec - start_tv.tv_sec) * 1000 + (tv.tv_usec - start_tv.tv_usec);
 }
 
 int NDL_PollEvent(char *buf, int len) {
@@ -56,6 +64,12 @@ int NDL_QueryAudio() {
 int NDL_Init(uint32_t flags) {
   if (getenv("NWM_APP")) {
     evtdev = 3;
+  }
+  struct timezone tz;
+  int ret = gettimeofday(&start_tv, &tz);
+  if(ret < 0) {
+      printf("Error on get time of day \n");
+      return -1;
   }
   return 0;
 }

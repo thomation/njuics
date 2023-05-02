@@ -1,19 +1,17 @@
-#include <sys/time.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <NDL.h>
+
 int main() {
     printf("Start timer test\n");
-    struct timeval tv;
-    struct timezone tz;
-    struct timeval last_tv = {0, 0};
+    NDL_Init(0);
+    uint32_t last_ms = 0;
     for(;;) {
-        int ret = gettimeofday(&tv, &tz);
-        if(ret < 0) {
-            printf("Error on get time of day \n");
-            return -1;
-        }
-        if(tv.tv_sec > last_tv.tv_sec || tv.tv_usec - last_tv.tv_usec > 500) {
-            printf("Get time of day:%u-%d\n", tv.tv_sec, tv.tv_usec);
-            last_tv = tv;
+        uint32_t ms = NDL_GetTicks();
+        if(ms - last_ms > 500) {
+            printf("Get Tickets:%u, last:%u\n", ms, last_ms);
+            last_ms = ms;
         }
     }
+    NDL_Quit();
 }
