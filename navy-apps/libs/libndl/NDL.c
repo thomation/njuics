@@ -87,6 +87,6 @@ int NDL_Init(uint32_t flags) {
 }
 
 void NDL_Quit() {
-  // if(events_fd > 0)
-  //   close(events_fd);
+  if(events_fd > 0)
+    close(events_fd);
 }
