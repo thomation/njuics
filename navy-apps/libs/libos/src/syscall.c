@@ -67,9 +67,11 @@ extern char end;
 static char* program_break = &end;
 void *_sbrk(intptr_t increment) {
   int ret = _syscall_(SYS_brk, (intptr_t)program_break + increment, 0, 0);
+  assert(ret == 0);
   if(ret == 0) {
+    char * old_program_break = program_break;
     program_break += increment;
-    return program_break;
+    return old_program_break;
   }
   return (void *)-1;
 }
