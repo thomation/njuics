@@ -118,6 +118,17 @@ int vsprintf(char* out, const char *fmt, va_list ap) {
           if(out != NULL) out += n;
         }
         break;
+        case 'u':
+        {
+          char tmp[32];
+          int d = va_arg(ap, int);
+          int len = uint_to_str(d, tmp);
+          int n = handle_number(out, tmp, len, prefix, pi);
+          count += n; 
+          if(out != NULL) out += n;
+        }
+        break;
+        // x and p are same
         case 'x':
         case 'p':
         {
