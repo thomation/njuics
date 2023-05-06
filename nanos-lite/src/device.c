@@ -48,7 +48,8 @@ size_t events_read(void *buf, size_t offset, size_t len) {
 
 size_t dispinfo_read(void *buf, size_t offset, size_t len) {
   char * str = buf;
-  strcpy(str, "WIDTH=300,HEIGHT=200");
+  AM_GPU_CONFIG_T cfg = io_read(AM_GPU_CONFIG);
+  sprintf(str, "WIDTH=%d,HEIGHT=%d", cfg.width, cfg.height);
   return strlen(str);
 }
 
