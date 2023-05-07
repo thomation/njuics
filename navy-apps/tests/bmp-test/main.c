@@ -20,10 +20,12 @@ int main() {
   get_screen_size(&w, &h);
   printf("Canvas (w=%d, h=%d)\n", w, h);
   NDL_OpenCanvas(&w, &h);
-  // void *bmp = BMP_Load("/share/pictures/projectn.bmp", &w, &h);
-  // assert(bmp);
-  // NDL_DrawRect(bmp, 0, 0, w, h);
-  // free(bmp);
+  printf("Start load bmp\n");
+  void *bmp = BMP_Load("/share/pictures/projectn.bmp", &w, &h);
+  assert(bmp);
+  printf("Bmp is loaded\n");
+  NDL_DrawRect(bmp, 0, 0, w, h);
+  free(bmp);
   NDL_Quit();
   printf("Test ends! Spinning...\n");
   while (1);

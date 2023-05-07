@@ -5,6 +5,7 @@ extern size_t ramdisk_write(const void *buf, size_t offset, size_t len);
 extern size_t serial_write(const void *buf, size_t offset, size_t len);
 extern size_t events_read(void *buf, size_t offset, size_t len); 
 extern size_t dispinfo_read(void *buf, size_t offset, size_t len); 
+extern size_t fb_write(const void *buf, size_t offset, size_t len); 
 
 typedef size_t (*ReadFn) (void *buf, size_t offset, size_t len);
 typedef size_t (*WriteFn) (const void *buf, size_t offset, size_t len);
@@ -35,6 +36,7 @@ static Finfo file_table[] __attribute__((used)) = {
   [FD_STDIN]  = {"stdin", 0, 0, 0, invalid_read, invalid_write},
   [FD_STDOUT] = {"stdout", 0, 0, 0, invalid_read, serial_write},
   [FD_STDERR] = {"stderr", 0, 0, 0, invalid_read, serial_write},
+  [FD_FB]     = {"framebuf", 0, 0, 0, invalid_read, fb_write},
   // [FD_XXX] must not have gap.
 #include "files.h"
   {"/dev/events", 0, 0, 0, events_read, invalid_write},
@@ -42,7 +44,10 @@ static Finfo file_table[] __attribute__((used)) = {
 };
 #define FILE_TABLE_SIZE sizeof(file_table) / sizeof(Finfo)
 void init_fs() {
-  // TODO: initialize the size of /dev/fb
+  AM_GPU_CONFIG_T cfg = io_read(AM_GPU_CONFIG);
+  Finfo * fb = &file_table[FD_FB];
+  fb->size = cfg.width * cfg.height * 4;
+  Log("framebuf size = %u\n", fb->size);
 }
 int fs_open(const char *pathname, int flags, int mode) {
   for(int i = 0; i < FILE_TABLE_SIZE; i ++) {
