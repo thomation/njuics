@@ -54,7 +54,14 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
 }
 
 size_t fb_write(const void *buf, size_t offset, size_t len) {
-  return 0;
+  // Just draw one line
+  AM_GPU_CONFIG_T cfg = io_read(AM_GPU_CONFIG);
+  int h = offset / 4 / cfg.width;
+  int w = offset / 4 - h * cfg.width;
+  assert(w + len / 4 <= cfg.width);
+  io_write(AM_GPU_FBDRAW, w, h, (uint32_t*)buf, len / 4, 1, false);
+  io_write(AM_GPU_FBDRAW, 0, 0, NULL, 0, 0, true);
+  return len;
 }
 int gettimeofday(void * tv, void * tz) {
   struct timevalue *_tv = (struct timevalue*)tv;
