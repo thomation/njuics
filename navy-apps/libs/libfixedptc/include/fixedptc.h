@@ -151,11 +151,13 @@ static inline fixedpt fixedpt_abs(fixedpt A) {
 }
 
 static inline fixedpt fixedpt_floor(fixedpt A) {
-	return 0;
+	return A & ~FIXEDPT_FMASK;
 }
 
 static inline fixedpt fixedpt_ceil(fixedpt A) {
-	return 0;
+	int n = fixedpt_toint(A);
+	if (fixedpt_fracpart(A) > 0) n += 1;
+	return fixedpt_fromint(n);
 }
 
 /*
