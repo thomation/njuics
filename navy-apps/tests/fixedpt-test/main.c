@@ -21,6 +21,9 @@ int main()
     printf("c*i: %d ?= %d\n", ci, fixedpt_rconst(7.9 * 2));
     // assert(cd == fixedpt_rconst(7.9 * 5.6));
     fixedpt c_d = fixedpt_div(c, d);
+    printf("c/b: %d ?= %d\n", c_d, fixedpt_rconst(7.9 / 5.6));
+    fixedpt c_i = fixedpt_divi(c, 2);
+    printf("c/i: %d ?= %d\n", c_i,fixedpt_rconst(7.9 / 2));
     // fixedpt b = fixedpt_fromint(10);
     // int c = 0;
     // printf("The d is %d\n", d);
