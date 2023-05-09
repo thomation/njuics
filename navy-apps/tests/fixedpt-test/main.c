@@ -24,15 +24,9 @@ int main()
     printf("c/b: %d ?= %d\n", c_d, fixedpt_rconst(7.9 / 5.6));
     fixedpt c_i = fixedpt_divi(c, 2);
     printf("c/i: %d ?= %d\n", c_i,fixedpt_rconst(7.9 / 2));
-    // fixedpt b = fixedpt_fromint(10);
-    // int c = 0;
-    // printf("The d is %d\n", d);
-    // assert(d == 1434);
-    // if (b > fixedpt_rconst(7.9))
-    // {
-    //     c = fixedpt_toint(fixedpt_div(fixedpt_mul(a + FIXEDPT_ONE, b), fixedpt_rconst(2.3)));
-    // }
-    // printf("The result is %d\n", c);
+    fixedpt e = fixedpt_rconst(-3.8);
+    fixedpt e2 = fixedpt_abs(e);
+    printf("abs e=%d: %d ?= %d\n", e, e2, fixedpt_rconst(3.8));
     printf("PASS!!!\n");
     return 0;
 }
