@@ -12,10 +12,17 @@ int main()
     fixedpt af = fixedpt_floor(a);
     printf("af: %d ?= %lld\n", af, fixedpt_fromint(1));
     assert(af == fixedpt_fromint(1));
-
+    fixedpt c = fixedpt_rconst(7.9);
+    fixedpt d = fixedpt_rconst(5.6);
+    fixedpt cd = fixedpt_mul(c, d);
+    // They must be same?
+    printf("c*d: %d ?= %d\n", cd, fixedpt_rconst(7.9 * 5.6));
+    fixedpt ci = fixedpt_muli(c, 2);
+    printf("c*i: %d ?= %d\n", ci, fixedpt_rconst(7.9 * 2));
+    // assert(cd == fixedpt_rconst(7.9 * 5.6));
+    fixedpt c_d = fixedpt_div(c, d);
     // fixedpt b = fixedpt_fromint(10);
     // int c = 0;
-    // fixedpt d = fixedpt_rconst(5.6);
     // printf("The d is %d\n", d);
     // assert(d == 1434);
     // if (b > fixedpt_rconst(7.9))
