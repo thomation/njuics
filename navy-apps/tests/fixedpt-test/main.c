@@ -27,6 +27,11 @@ int main()
     fixedpt e = fixedpt_rconst(-3.8);
     fixedpt e2 = fixedpt_abs(e);
     printf("abs e=%d: %d ?= %d\n", e, e2, fixedpt_rconst(3.8));
+    fixedpt ef = fixedpt_floor(e);
+    printf("ef: %d ?= %d\n", ef, fixedpt_rconst(-4));
+    fixedpt ec = fixedpt_ceil(e);
+    printf("ec: %d ?= %d\n", ec, fixedpt_rconst(-3));
+
     printf("PASS!!!\n");
     return 0;
 }
