@@ -17,6 +17,15 @@ int SDL_PollEvent(SDL_Event *ev) {
 }
 
 int SDL_WaitEvent(SDL_Event *event) {
+  while (1) {
+    char buf[64];
+    char type[8];
+    char key[16];
+    if (NDL_PollEvent(buf, sizeof(buf))) {
+      sscanf(buf,"%s %s", type, key);
+      printf("receive event: %s, type=%s, key=%s\n", buf, type, key);
+    }
+  }
   return 1;
 }
 
