@@ -27,7 +27,7 @@ void init_proc() {
 
   // load program here
 
-  naive_uload(NULL, "/bin/fixedpt-test");
+  naive_uload(NULL, "/bin/nslider");
 }
 
 Context* schedule(Context *prev) {
