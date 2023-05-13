@@ -29,9 +29,20 @@ int NDL_PollEvent(char *buf, int len) {
     return 0;
   return read(events_fd, buf, len);
 }
+static void get_screen_size(int *w, int *h) {
+  int disp_fd = open("/proc/dispinfo", 0, 0);
+  printf("fd of /proc/dispinfo is %d\n", disp_fd);
+  char buf[128];
+  if(read(disp_fd, buf, 128)) {
+    sscanf(buf, "WIDTH=%d,HEIGHT=%d", w, h);
+  }
+}
 
 void NDL_OpenCanvas(int *w, int *h) {
   printf("NDL_OpenCanvas w=%d, h=%d evn=%s\n", *w, *h, getenv("NWM_APP"));
+  if(*w == 0 && *h == 0) {
+    get_screen_size(w, h);
+  }
   screen_w = *w; screen_h = *h;
   if (getenv("NWM_APP")) {
     int fbctl = 4;
@@ -53,7 +64,7 @@ void NDL_OpenCanvas(int *w, int *h) {
 }
 
 void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
-  printf("NDL_DrawRect x = %d, y = %d, w = %d, h =%d \n", x, y, w, h);
+  // printf("NDL_DrawRect x = %d, y = %d, w = %d, h =%d \n", x, y, w, h);
   int fd = open("/dev/fb", 0, 0);
   if(fd < 0) {
     printf("Cannot open /dev/fb\n");
