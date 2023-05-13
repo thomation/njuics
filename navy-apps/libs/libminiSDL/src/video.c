@@ -55,11 +55,11 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
     h = dst->h;
   }
   printf("SDL_FillRect: (%d, %d), (%d, %d)\n", x, y, w, h);
-  for(int j = 0; j < h; j ++) {
-    for(int i = 0; i < w; i ++) {
-      NDL_DrawRect(&color, x + i, y + j, 1, 1);
-    }
-  }
+  uint32_t * pixels = malloc(w * h * sizeof(uint32_t));
+  for(int i = 0; i < w * h; i ++)
+    pixels[i] = color;
+  NDL_DrawRect(pixels, x, y, w, h);
+  free(pixels);
 }
 
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
