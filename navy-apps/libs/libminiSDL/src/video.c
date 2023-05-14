@@ -7,7 +7,6 @@
 void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
-  return;
   int16_t sx, sy; 
   uint16_t sw, sh;
   if(srcrect) {
@@ -31,12 +30,17 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
   }
 
   printf("SDL_BlitSurface src:(%d, %d), dst:(%d, %d), size:(%d, %d)\n", sx, sy, dx, dy, sw, sh);
-
+  uint32_t * spixels = src->pixels;
+  uint32_t * dpixels = dst->pixels;
   for(int j = 0; j < sh; j ++) {
-    int doffset = (j + dy) * sw + dx;
-    int soffset = (j + sy) * sw + sx;
-    if(soffset >= 0 && doffset >= 0)
-      memcpy(dst->pixels + doffset, src->pixels + soffset, sw);
+    int doffset = (j + dy) * dst->w + dx;
+    int soffset = (j + sy) * src->w + sx;
+    if(soffset >= 0 && doffset >= 0) {
+      // printf("SDL_BlitSurface cp %d to %d\n", soffset, doffset);
+      for(int k = 0; k < sw; k++) {
+        dpixels[doffset + k] = spixels[soffset + k];
+      }
+    }
   }
 }
 
@@ -55,11 +59,12 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
     h = dst->h;
   }
   printf("SDL_FillRect: (%d, %d), (%d, %d)\n", x, y, w, h);
-  uint32_t * pixels = malloc(w * h * sizeof(uint32_t));
-  for(int i = 0; i < w * h; i ++)
-    pixels[i] = color;
-  NDL_DrawRect(pixels, x, y, w, h);
-  free(pixels);
+  uint32_t * pixels = dst->pixels;
+  for(int j = 0; j < h; j ++) {
+    for(int i = 0; i < w; i ++) {
+      pixels[i + x + (j + y) * dst->w] = color;
+    }
+  }
 }
 
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
