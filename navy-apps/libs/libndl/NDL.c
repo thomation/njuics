@@ -40,10 +40,11 @@ static void get_screen_size(int *w, int *h) {
 
 void NDL_OpenCanvas(int *w, int *h) {
   printf("NDL_OpenCanvas w=%d, h=%d evn=%s\n", *w, *h, getenv("NWM_APP"));
+  get_screen_size(&screen_w, &screen_h);
   if(*w == 0 && *h == 0) {
-    get_screen_size(w, h);
+    *w = screen_w;
+    *h = screen_h;
   }
-  screen_w = *w; screen_h = *h;
   if (getenv("NWM_APP")) {
     int fbctl = 4;
     fbdev = 5;
