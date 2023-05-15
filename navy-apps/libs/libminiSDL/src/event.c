@@ -13,12 +13,7 @@ int SDL_PushEvent(SDL_Event *ev) {
   return 0;
 }
 
-int SDL_PollEvent(SDL_Event *ev) {
-  return 0;
-}
-
-int SDL_WaitEvent(SDL_Event *event) {
-  while (1) {
+int SDL_PollEvent(SDL_Event *event) {
     char buf[64];
     char type[8];
     char key[16];
@@ -38,6 +33,13 @@ int SDL_WaitEvent(SDL_Event *event) {
         }
       }
     }
+    return 0;
+}
+
+int SDL_WaitEvent(SDL_Event *event) {
+  while (1) {
+    if(SDL_PollEvent(event))
+      return 1;
   }
   return 1;
 }
