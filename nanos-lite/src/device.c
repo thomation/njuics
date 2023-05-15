@@ -56,6 +56,7 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
 size_t fb_write(const void *buf, size_t offset, size_t len) {
   // Just draw one line
   AM_GPU_CONFIG_T cfg = io_read(AM_GPU_CONFIG);
+  // printf("cfg:(%d, %d), draw len(%d), offset(%d)\n", cfg.width, cfg.height, len, offset);
   int h = offset / 4 / cfg.width;
   int w = offset / 4 - h * cfg.width;
   assert(w + len / 4 <= cfg.width);
