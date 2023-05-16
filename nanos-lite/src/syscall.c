@@ -61,7 +61,8 @@ void do_syscall(Context *c) {
 
 int sys_exit()
 {
-  halt(0);
+  // halt(0);
+  sys_execve("/bin/menu", NULL, NULL);
   return 0;
 }
 int sys_yield()

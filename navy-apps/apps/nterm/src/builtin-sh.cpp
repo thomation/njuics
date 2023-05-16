@@ -23,6 +23,9 @@ static void sh_prompt() {
 }
 
 static void sh_handle_cmd(const char *cmd) {
+  if(strcmp(cmd, "exit")){
+    exit(0);
+  }
 }
 
 void builtin_sh_run() {
