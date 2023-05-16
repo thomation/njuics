@@ -65,6 +65,7 @@ size_t fs_read(int fd, void *buf, size_t len) {
   if(e->read != NULL) {
     ret = e->read(buf, e->disk_offset + e->open_offset, len);
   } else {
+    len = e->open_offset + len > e->size ? e->size - e->open_offset : len;
     ret = ramdisk_read(buf, e->disk_offset + e->open_offset, len);
     e->open_offset += ret;
   }
