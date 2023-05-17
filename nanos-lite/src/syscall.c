@@ -62,7 +62,7 @@ void do_syscall(Context *c) {
 int sys_exit()
 {
   // halt(0);
-  sys_execve("/bin/menu", NULL, NULL);
+  sys_execve("/bin/nterm", NULL, NULL);
   return 0;
 }
 int sys_yield()
