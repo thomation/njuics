@@ -90,7 +90,12 @@ int sys_brk(void * addr) {
 }
 int sys_execve(const char *fname, char * const argv[], char *const envp[])
 {
-  naive_uload(NULL, fname);
+  char path[32];
+  strcpy(path, fname);
+  if(path[0] != '/') {
+    sprintf(path, "%s/%s", envp[0], fname);
+  }
+  naive_uload(NULL, path);
   return 0;
 }
 int sys_gettimeofday(void *tv, void *tz) {

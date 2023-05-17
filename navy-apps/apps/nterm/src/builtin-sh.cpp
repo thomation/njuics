@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <SDL.h>
-
+char * envp[1];
 char handle_key(SDL_Event *ev);
 
 static void sh_printf(const char *format, ...) {
@@ -27,12 +27,14 @@ static void sh_handle_cmd(const char *cmd) {
   if(strcmp(cmd, "exit\n") == 0){
     exit(0);
   } else if(strcmp(cmd, "bird\n") == 0) {
-    execve("/bin/bird", NULL, NULL);
+    execve("bird", NULL, envp);
   }
   printf("exec error:%s\n", cmd);
 }
 
 void builtin_sh_run() {
+  char *path = getenv("PATH");
+  envp[0] = path;
   sh_banner();
   sh_prompt();
 
