@@ -23,9 +23,13 @@ static void sh_prompt() {
 }
 
 static void sh_handle_cmd(const char *cmd) {
-  if(strcmp(cmd, "exit")){
+  // printf("cmd: %s, len:%d\n", cmd, strlen(cmd));
+  if(strcmp(cmd, "exit\n") == 0){
     exit(0);
+  } else if(strcmp(cmd, "bird\n") == 0) {
+    execve("/bin/bird", NULL, NULL);
   }
+  printf("exec error:%s\n", cmd);
 }
 
 void builtin_sh_run() {
