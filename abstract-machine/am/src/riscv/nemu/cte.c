@@ -38,6 +38,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   context->mstatus = 0;
   context->mcause = 0;
   context->mepc = (uintptr_t)entry;
+  context->ARG1 = (uintptr_t)arg;
   printf("kcontext: mepc:%p\n", context->mepc);
   return context;
 }
