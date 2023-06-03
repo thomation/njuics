@@ -69,4 +69,12 @@ void naive_uload(PCB *pcb, const char *filename) {
   Log("Jump to entry = %p", entry);
   ((void(*)())entry) ();
 }
+void context_uload(PCB *pcb, const char *filename) {
+  uintptr_t entry = loader(pcb, filename);
+  Area area;
+  area.start = pcb->stack;
+  area.end = pcb->stack + STACK_SIZE;
+  pcb->cp = ucontext(NULL, area, (void*)entry);
+  printf("context_uload area:(%p, %p), cp:%p, entry:%p, of %p\n", area.start, area.end, pcb->cp, entry, pcb);
+}
 

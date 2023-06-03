@@ -29,16 +29,16 @@ void hello_fun(void *arg) {
 }
 
 extern void naive_uload(PCB *pcb, const char *filename); 
+extern void context_uload(PCB *pcb, const char *filename);
 void init_proc() {
   context_kload(&pcb[0], hello_fun, (void*)1);
-  context_kload(&pcb[1], hello_fun, (void*)2);
   switch_boot_pcb();
 
   Log("Initializing processes...");
 
   // load program here
 
-  // naive_uload(NULL, "/bin/nterm");
+  context_uload(&pcb[1], "/bin/dummy");
 }
 
 Context* schedule(Context *prev) {
@@ -47,5 +47,6 @@ Context* schedule(Context *prev) {
 // always select pcb[0] as the new process
   current = (current == &pcb[0] ? &pcb[1] : &pcb[0]);
 // then return the new context
+  printf("schedule from %p to %p\n", prev, current->cp);
   return current->cp;
 }
