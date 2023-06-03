@@ -38,7 +38,7 @@ void init_proc() {
 
   // load program here
 
-  context_uload(&pcb[1], "/bin/dummy");
+  context_uload(&pcb[1], "/bin/bird");
 }
 
 Context* schedule(Context *prev) {
