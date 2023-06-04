@@ -29,7 +29,9 @@ void hello_fun(void *arg) {
 }
 
 extern void naive_uload(PCB *pcb, const char *filename); 
-extern void context_uload(PCB *pcb, const char *filename);
+extern void context_uload(PCB *pcb, const char *filename, int argc, char *const argv[], int envc, char *const envp[]);
+static char * const argv[2] = {"test argv1", "test argv2"};
+static char * const envp[1] = {"test envp"};
 void init_proc() {
   context_kload(&pcb[0], hello_fun, (void*)1);
   switch_boot_pcb();
@@ -38,7 +40,7 @@ void init_proc() {
 
   // load program here
 
-  context_uload(&pcb[1], "/bin/bird");
+  context_uload(&pcb[1], "/bin/bird", 2, argv, 1, envp);
 }
 
 Context* schedule(Context *prev) {

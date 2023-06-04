@@ -69,12 +69,75 @@ void naive_uload(PCB *pcb, const char *filename) {
   Log("Jump to entry = %p", entry);
   ((void(*)())entry) ();
 }
-void context_uload(PCB *pcb, const char *filename) {
+void debug_string(uintptr_t addr) {
+  char * s = (char *)addr;
+  printf("%s, %p\n", s, addr);
+  while(*s != '\0') {
+    printf("%d\n", *s);
+    s ++;
+  }
+}
+void debug_param(uintptr_t top) {
+  uintptr_t *top2 = (uintptr_t *)top;
+  printf("top2 from %p\n", top2);
+  uintptr_t argc = *((uintptr_t *)top2 ++);
+  printf("argc = %d\n", argc);
+  for(int i = 0; i < argc; i ++, top2 ++) {
+    uintptr_t v = *((uintptr_t*)top2);
+    printf("argv[%d]=%p, top2:%p\n", i, v, top2);
+    debug_string(v);
+  }
+  for(int i = 0; *top2 != 0; i++, top2 ++) {
+    uintptr_t v = *((uintptr_t*)top2);
+    printf("envp[%d]=%p, top2:%p\n", i, v, top2);
+    debug_string(v);
+  }
+}
+uintptr_t pargv[10];
+uintptr_t penvp[10];
+void context_uload(PCB *pcb, const char *filename, int argc, char *const argv[], int envc, char *const envp[]) {
   uintptr_t entry = loader(pcb, filename);
   Area area;
   area.start = pcb->stack;
   area.end = pcb->stack + STACK_SIZE;
   pcb->cp = ucontext(NULL, area, (void*)entry);
+  // push argv and envp
+  char *top = (char*)pcb->cp->GPRx;
+  top -=8;
+  for(int i = 0; i < argc; i ++) {
+    char * const s = argv[i];
+    int len = strlen(s) + 1;
+    top -= len;
+    strncpy(top, s, len);
+    top[len] = '\0';
+    pargv[i] = (uintptr_t)top;
+    printf("%s, %s, %s, %p\n", argv[i], top, (char*)pargv[i], pargv[i]);
+  }
+  for(int i = 0; i < envc; i ++) {
+    char * const s = envp[i];
+    int len = strlen(s) + 1;
+    top -= len;
+    strncpy(top, s, len);
+    top[len] = '\0';
+    penvp[i] = (uintptr_t)top;
+    printf("%s, %s, %s, %p\n", argv[i], top, (char*)penvp[i], penvp[i]);
+  }
+  uintptr_t * top2 = (uintptr_t*)top;
+  printf("top:%p, top2:%p\n", top, top2);
+  *--top2 = 0;
+  for(int i = envc - 1; i >= 0; i --){
+    --top2;
+    printf("penvp:%p, top2=%p\n", penvp[i], top2);
+    * top2 = penvp[i];
+  }
+  for(int i = argc - 1; i >= 0; i --) {
+    --top2;
+    printf("pargv:%p, top2=%p\n", pargv[i], top2);
+    * top2 = pargv[i];
+  }
+  * --top2 = argc;
+  pcb->cp->GPRx = (uintptr_t)top2;
   printf("context_uload area:(%p, %p), cp:%p, entry:%p, of %p\n", area.start, area.end, pcb->cp, entry, pcb);
+  debug_param(pcb->cp->GPRx);
 }
 
