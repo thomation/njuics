@@ -72,10 +72,6 @@ void naive_uload(PCB *pcb, const char *filename) {
 void debug_string(uintptr_t addr) {
   char * s = (char *)addr;
   printf("%s, %p\n", s, addr);
-  while(*s != '\0') {
-    printf("%d\n", *s);
-    s ++;
-  }
 }
 void debug_param(uintptr_t top) {
   uintptr_t *top2 = (uintptr_t *)top;
@@ -105,6 +101,7 @@ void context_uload(PCB *pcb, const char *filename, int argc, char *const argv[],
   char *top = (char*)pcb->cp->GPRx;
   top -=8;
   for(int i = 0; i < argc; i ++) {
+    top --;
     char * const s = argv[i];
     int len = strlen(s) + 1;
     top -= len;
@@ -114,6 +111,7 @@ void context_uload(PCB *pcb, const char *filename, int argc, char *const argv[],
     printf("%s, %s, %s, %p\n", argv[i], top, (char*)pargv[i], pargv[i]);
   }
   for(int i = 0; i < envc; i ++) {
+    top --;
     char * const s = envp[i];
     int len = strlen(s) + 1;
     top -= len;
