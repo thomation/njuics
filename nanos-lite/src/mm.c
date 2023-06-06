@@ -1,9 +1,11 @@
 #include <memory.h>
+#include <stdio.h>
 
 static void *pf = NULL;
 
 void* new_page(size_t nr_page) {
-  return NULL;
+  pf += nr_page * 4096;
+  return pf;
 }
 
 #ifdef HAS_VME

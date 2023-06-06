@@ -1,6 +1,7 @@
 #include <proc.h>
 #include <elf.h>
 #include <fs.h>
+#include <memory.h>
 
 #ifdef __LP64__
 # define Elf_Ehdr Elf64_Ehdr
@@ -97,7 +98,8 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   area.start = pcb->stack;
   area.end = pcb->stack + STACK_SIZE;
   pcb->cp = ucontext(NULL, area, (void*)entry);
-  pcb->cp->GPRx = (uintptr_t)heap.end;
+  pcb->cp->GPRx = (uintptr_t)new_page(8);
+  printf("context_uload stack:%p, heap:%p\n", pcb->cp->GPRx, heap.end);
   // push argv and envp
   char *top = (char*)pcb->cp->GPRx;
   top -=8;
