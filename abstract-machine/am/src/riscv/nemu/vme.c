@@ -74,7 +74,5 @@ Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
   context->mstatus = 0;
   context->mcause = 0;
   context->mepc = (uintptr_t)entry;
-  context->GPRx = (uintptr_t)heap.end;
-  printf("ucontext: mepc:%p, gprx:%p\n", context->mepc, context->GPRx);
   return context;
 }
