@@ -29,9 +29,9 @@ void hello_fun(void *arg) {
 }
 
 extern void naive_uload(PCB *pcb, const char *filename); 
-extern void context_uload(PCB *pcb, const char *filename, int argc, char *const argv[], int envc, char *const envp[]);
-static char * const argv[2] = {"test argv1", "test argv2"};
-static char * const envp[1] = {"test envp"};
+extern void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]);
+static char * const argv[] = {"test argv1", "test argv2", NULL};
+static char * const envp[] = {"test envp", NULL};
 void init_proc() {
   context_kload(&pcb[0], hello_fun, (void*)1);
   switch_boot_pcb();
@@ -39,8 +39,8 @@ void init_proc() {
   Log("Initializing processes...");
 
   // load program here
-
-  context_uload(&pcb[1], "/bin/bird", 2, argv, 1, envp);
+  // man execve, argv and envp must be terminated with NULL
+  context_uload(&pcb[1], "/bin/menu", argv, envp);
 }
 
 Context* schedule(Context *prev) {
