@@ -12,6 +12,7 @@ int sys_close(int fd);
 int sys_lseek(int fd, int offset, int whence);
 int sys_brk(void * addr);
 extern void naive_uload(PCB *pcb, const char *filename); 
+extern void create_proc(const char *filename, char *const argv[], char *const envp[]); 
 int sys_execve(const char *fname, char * const argv[], char *const envp[]);
 extern int gettimeofday(void * tv, void * tz);
 int sys_gettimeofday(void * tv, void * tz);
@@ -95,7 +96,7 @@ int sys_execve(const char *fname, char * const argv[], char *const envp[])
   if(path[0] != '/') {
     sprintf(path, "%s/%s", envp[0], fname);
   }
-  naive_uload(NULL, path);
+  create_proc(path, argv, envp);
   return 0;
 }
 int sys_gettimeofday(void *tv, void *tz) {

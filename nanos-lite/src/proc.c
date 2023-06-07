@@ -3,6 +3,7 @@
 #define MAX_NR_PROC 4
 
 static PCB pcb[MAX_NR_PROC] __attribute__((used)) = {};
+static int used_pbc_count = 0;
 static PCB pcb_boot = {};
 PCB *current = NULL;
 
@@ -30,19 +31,29 @@ void hello_fun(void *arg) {
 
 extern void naive_uload(PCB *pcb, const char *filename); 
 extern void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]);
-static char * const argv[] = {"test argv1", "test argv2", NULL};
-static char * const envp[] = {"test envp", NULL};
+static char * const argv[] = {"/bin/exec-test", NULL};
+static char * const envp[] = {NULL};
 void init_proc() {
-  context_kload(&pcb[0], hello_fun, (void*)1);
+  context_kload(&pcb[used_pbc_count ++], hello_fun, (void*)1);
   switch_boot_pcb();
 
   Log("Initializing processes...");
 
   // load program here
   // man execve, argv and envp must be terminated with NULL
-  context_uload(&pcb[1], "/bin/menu", argv, envp);
-}
+  context_uload(&pcb[used_pbc_count ++], "/bin/exec-test", argv, envp);
 
+}
+void create_proc(const char *filename, char *const argv[], char *const envp[]) {
+  if(used_pbc_count >= MAX_NR_PROC) {
+    printf("Only support %d processes\n", MAX_NR_PROC);
+    return;
+  }
+  // Just reuse 1
+  context_uload(&pcb[used_pbc_count], filename, argv, envp);
+  switch_boot_pcb();
+  yield();
+}
 Context* schedule(Context *prev) {
   // save the context pointer
   current->cp = prev;
