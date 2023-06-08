@@ -31,7 +31,8 @@ void hello_fun(void *arg) {
 
 extern void naive_uload(PCB *pcb, const char *filename); 
 extern void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]);
-static char * const argv[] = {"/bin/exec-test", NULL};
+#define EXEC_FILE "/bin/menu"
+static char * const argv[] = {EXEC_FILE, NULL};
 static char * const envp[] = {NULL};
 void init_proc() {
   context_kload(&pcb[0], hello_fun, (void*)1);
@@ -41,7 +42,7 @@ void init_proc() {
 
   // load program here
   // man execve, argv and envp must be terminated with NULL
-  context_uload(&pcb[1], "/bin/exec-test", argv, envp);
+  context_uload(&pcb[1], EXEC_FILE, argv, envp);
 
 }
 void create_proc(const char *filename, char *const argv[], char *const envp[]) {
