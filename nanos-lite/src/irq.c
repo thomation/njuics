@@ -6,7 +6,7 @@ extern Context* schedule(Context *prev);
 static Context* do_event(Event e, Context* c) {
   switch (e.event) {
     case EVENT_YIELD:
-      printf("Hello yield\n");
+      // printf("Hello yield\n");
       return schedule(c);;
     case EVENT_SYSCALL:
       do_syscall(c);

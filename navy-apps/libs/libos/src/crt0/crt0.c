@@ -5,8 +5,8 @@
 
 int main(int argc, char *argv[], char *envp[]);
 extern char **environ;
-char * argv[10];
-char * envp[10];
+static char * argv[10];
+static char * envp[10];
 
 char * parse_string(uintptr_t addr) {
   char * s = (char *)addr;

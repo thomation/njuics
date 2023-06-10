@@ -93,15 +93,8 @@ void debug_param(uintptr_t top) {
 uintptr_t pargv[10];
 uintptr_t penvp[10];
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
-  uintptr_t entry = loader(pcb, filename);
-  Area area;
-  area.start = pcb->stack;
-  area.end = pcb->stack + STACK_SIZE;
-  pcb->cp = ucontext(NULL, area, (void*)entry);
-  pcb->cp->GPRx = (uintptr_t)new_page(8);
-  printf("context_uload stack:%p, heap:%p\n", pcb->cp->GPRx, heap.end);
-  // push argv and envp
-  char *top = (char*)pcb->cp->GPRx;
+  // Assign stack and copy argv first to avoid argv, which may be assigned in code space,  is destroyed by loading code.
+  char *top = new_page(8);
   top -=8;
   int argc = 0;
   for(argc = 0; argv[argc] != NULL ; argc ++) {
@@ -139,8 +132,13 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
     * top2 = pargv[i];
   }
   * --top2 = argc;
+  uintptr_t entry = loader(pcb, filename);
+  Area area;
+  area.start = pcb->stack;
+  area.end = pcb->stack + STACK_SIZE;
+  pcb->cp = ucontext(NULL, area, (void*)entry);
   pcb->cp->GPRx = (uintptr_t)top2;
-  printf("context_uload area:(%p, %p), cp:%p, entry:%p, of %p\n", area.start, area.end, pcb->cp, entry, pcb);
+  printf("context_uload stack:%p, heap:%p\n", pcb->cp->GPRx, heap.end);
   debug_param(pcb->cp->GPRx);
 }
 

@@ -22,8 +22,10 @@ void switch_boot_pcb() {
 void hello_fun(void *arg) {
   int j = 1;
   while (1) {
-    Log("Hello World from Nanos-lite with arg '%p' for the %dth time!", (uintptr_t)arg, j);
-    printf("hello fun pcb 0: %p, pcb 1:%p, stack:%p\n", pcb[0].cp, pcb[1].cp, &j);
+    if(j % 10000 == 0) {
+      Log("Hello World from Nanos-lite with arg '%p' for the %dth time!", (uintptr_t)arg, j);
+      printf("hello fun pcb 0: %p, pcb 1:%p, stack:%p\n", pcb[0].cp, pcb[1].cp, &j);
+    }
     j ++;
     yield();
   }
@@ -61,6 +63,6 @@ Context* schedule(Context *prev) {
 // always select pcb[0] as the new process
   current = (current == &pcb[0] ? &pcb[1] : &pcb[0]);
 // then return the new context
-  printf("schedule from %p to %p\n", prev, current->cp);
+  // printf("schedule from %p to %p\n", prev, current->cp);
   return current->cp;
 }
