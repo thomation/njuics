@@ -4,7 +4,7 @@
 static void *pf = NULL;
 
 void* new_page(size_t nr_page) {
-  pf += nr_page * 4096;
+  pf = (void *)ROUNDUP(pf + nr_page * PGSIZE, PGSIZE);
   return pf;
 }
 
