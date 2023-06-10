@@ -21,13 +21,14 @@ static void sh_banner() {
 static void sh_prompt() {
   sh_printf("sh> ");
 }
-
+static char * argv[10];
 static void sh_handle_cmd(const char *cmd) {
   // printf("cmd: %s, len:%d\n", cmd, strlen(cmd));
   if(strcmp(cmd, "exit\n") == 0){
     exit(0);
   } else if(strcmp(cmd, "bird\n") == 0) {
-    execve("bird", NULL, envp);
+    argv[0] = "bird";
+    execve("bird", argv, envp);
   }
   printf("exec error:%s\n", cmd);
 }
