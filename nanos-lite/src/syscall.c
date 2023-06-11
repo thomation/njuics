@@ -91,8 +91,12 @@ int sys_brk(void * addr) {
 }
 int sys_execve(const char *fname, char * const argv[], char *const envp[])
 {
+  printf("sys_execve fname:%s, argv:%p, envp:%p\n", fname, argv, envp);
   for(int i = 0; argv[i] != NULL; i ++) {
     printf("sys_execve argv[%d]=%s\n", i, argv[i]);
+  }
+  for(int i = 0; envp[i] != NULL; i ++) {
+    printf("sys_execve envp[%d]=%s\n", i, envp[i]);
   }
   char path[32];
   strcpy(path, fname);

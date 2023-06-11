@@ -75,6 +75,7 @@ void debug_string(uintptr_t addr) {
   printf("%s, %p\n", s, addr);
 }
 void debug_param(uintptr_t top) {
+  printf("debug param begin >>>>>>>>>>>>>>>\n");
   uintptr_t *top2 = (uintptr_t *)top;
   printf("top2 from %p\n", top2);
   uintptr_t argc = *((uintptr_t *)top2 ++);
@@ -89,6 +90,7 @@ void debug_param(uintptr_t top) {
     printf("envp[%d]=%p, top2:%p\n", i, v, top2);
     debug_string(v);
   }
+  printf("debug param end <<<<<<<<<<<<<<<<\n");
 }
 uintptr_t pargv[10];
 uintptr_t penvp[10];
@@ -105,7 +107,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
     strncpy(top, s, len);
     top[len] = '\0';
     pargv[argc] = (uintptr_t)top;
-    printf("%s, %s, %s, %p\n", argv[argc], top, (char*)pargv[argc], pargv[argc]);
+    printf("context_uload:%s, %s, %s, %p\n", argv[argc], top, (char*)pargv[argc], pargv[argc]);
   }
   int envc = 0;
   for(envc = 0; envp[envc] != NULL; envc ++) {
@@ -116,7 +118,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
     strncpy(top, s, len);
     top[len] = '\0';
     penvp[envc] = (uintptr_t)top;
-    printf("%s, %s, %s, %p\n", argv[envc], top, (char*)penvp[envc], penvp[envc]);
+    printf("context_uload:%s, %s, %s, %p\n", argv[envc], top, (char*)penvp[envc], penvp[envc]);
   }
   uintptr_t * top2 = (uintptr_t*)top;
   // printf("top:%p, top2:%p\n", top, top2);
