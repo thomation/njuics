@@ -97,6 +97,7 @@ uintptr_t penvp[10];
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
   // Assign stack and copy argv first to avoid argv, which may be assigned in code space,  is destroyed by loading code.
   char *top = new_page(8);
+  top += 8 * PGSIZE;
   top -=8;
   int argc = 0;
   for(argc = 0; argv[argc] != NULL ; argc ++) {
@@ -140,7 +141,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   area.end = pcb->stack + STACK_SIZE;
   pcb->cp = ucontext(NULL, area, (void*)entry);
   pcb->cp->GPRx = (uintptr_t)top2;
-  printf("context_uload stack:%p, heap:%p\n", pcb->cp->GPRx, heap.end);
+  printf("context_uload stack:%p, heap:(%p to %p)\n", pcb->cp->GPRx, heap.start, heap.end);
   debug_param(pcb->cp->GPRx);
 }
 

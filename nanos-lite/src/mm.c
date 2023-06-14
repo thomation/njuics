@@ -4,13 +4,17 @@
 static void *pf = NULL;
 
 void* new_page(size_t nr_page) {
+  void * first = pf;
   pf = (void *)ROUNDUP(pf + nr_page * PGSIZE, PGSIZE);
-  return pf;
+  return first;
 }
 
 #ifdef HAS_VME
 static void* pg_alloc(int n) {
-  return NULL;
+  int nr_page = n / PGSIZE;
+  if(nr_page * PGSIZE < n)
+    nr_page ++;
+  return new_page(nr_page);
 }
 #endif
 
