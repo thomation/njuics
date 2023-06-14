@@ -26,6 +26,7 @@ typedef struct {
   #define mtvec sr[0x305]
   #define mepc sr[0x341]
   #define mcause sr[0x342]
+  #define satp sr[0x180]
 } riscv32_CPU_state;
 
 // decode
@@ -35,6 +36,12 @@ typedef struct {
   } inst;
 } riscv32_ISADecodeInfo;
 
-#define isa_mmu_check(vaddr, len, type) (MMU_DIRECT)
-
+#define isa_mmu_check(vaddr, len, type) ( (cpu.satp >> 31) &0x1 )
+/*
+// #define isa_mmu_check(vaddr, len, type) ({ \
+//   uintptr_t satp; \
+//   asm volatile("csrr %0, satp" : "=r"(satp)); \
+//   uintptr_t mode = (satp >> (32 - 1)) & 0x1; \
+//   mode; })
+*/
 #endif
