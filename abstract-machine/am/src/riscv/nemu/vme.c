@@ -67,6 +67,15 @@ void __am_switch(Context *c) {
 }
 
 void map(AddrSpace *as, void *va, void *pa, int prot) {
+  uintptr_t vpn1 = (((uintptr_t) va) >> 22) & 0x3ff;
+  uintptr_t vpn0 = (((uintptr_t) va) >> 12) & 0x3ff;
+  uintptr_t pnn = (((uintptr_t)pa) >> 12) && 0xfffff;
+  uintptr_t *dir = (uintptr_t *)as->ptr;
+  if(!dir[vpn1]) {
+    dir[vpn1] = (uintptr_t)pgalloc_usr(PGSIZE);
+  }
+  uintptr_t * table = (uintptr_t *)dir[vpn1];
+  table[vpn0] = pnn;
 }
 
 Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
