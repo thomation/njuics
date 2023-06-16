@@ -37,11 +37,4 @@ typedef struct {
 } riscv32_ISADecodeInfo;
 
 #define isa_mmu_check(vaddr, len, type) ( (cpu.satp >> 31) &0x1 )
-/*
-// #define isa_mmu_check(vaddr, len, type) ({ \
-//   uintptr_t satp; \
-//   asm volatile("csrr %0, satp" : "=r"(satp)); \
-//   uintptr_t mode = (satp >> (32 - 1)) & 0x1; \
-//   mode; })
-*/
 #endif

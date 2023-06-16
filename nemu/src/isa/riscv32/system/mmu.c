@@ -18,5 +18,22 @@
 #include <memory/vaddr.h>
 
 paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
-  return MEM_RET_FAIL;
+  // printf("isa_mmu_trans: vaddr %x, len %d, type %d\n", vaddr, len, type);
+  vaddr_t vpn1 = (vaddr >> 22) & 0x3ff;
+  vaddr_t vpn0 = (vaddr >> 12) & 0x3ff;
+  vaddr_t offset = vaddr &0xfff;
+  uintptr_t ptr = (cpu.satp << 12);
+  paddr_t * dir = (paddr_t*)ptr;
+  // printf("is_mmu_trans: vpn1 %x, vpn0 %x, offset %x\n", vpn1, vpn0, offset);
+  // printf("is_mmu_trans: satp %x, dir %lx\n", cpu.satp, ptr);
+  uintptr_t pageaddr = (uintptr_t)(dir + vpn1);
+  uintptr_t page = paddr_read((paddr_t)pageaddr, 4) & ~0x3ff;
+  // printf("isa_mmu_trans: page %lx @ %lx\n", page, pageaddr);
+  uintptr_t pnnaddr = (uintptr_t)((paddr_t *)page + vpn0);
+  paddr_t pnn = (paddr_read((paddr_t)pnnaddr, 4) & ~0x3ff) >> 10;
+  // printf("isa_mmu_trans: pnn %x @ %lx\n", pnn, pnnaddr);
+  paddr_t paddr =  pnn << 12 | offset;
+  // printf("isa_mmu_trans: paddr %x\n", paddr);
+  Assert(paddr == vaddr, "paddr must be same as vaddr in core space\n");
+  return paddr;
 }

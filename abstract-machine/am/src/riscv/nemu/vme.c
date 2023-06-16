@@ -29,16 +29,25 @@ bool vme_init(void* (*pgalloc_f)(int), void (*pgfree_f)(void*)) {
   pgfree_usr = pgfree_f;
 
   kas.ptr = pgalloc_f(PGSIZE);
+  printf("vme_init: ptr %p\n", kas.ptr);
 
   int i;
   for (i = 0; i < LENGTH(segments); i ++) {
+    printf("map start %p, end %p\n", segments[i].start, segments[i].end);
     void *va = segments[i].start;
     for (; va < segments[i].end; va += PGSIZE) {
       map(&kas, va, va, 0);
     }
   }
-
+  printf("vme_init map finished\n");
+  // uint32_t * dir = (uint32_t*)kas.ptr;
+  // for(int i = 0; i < PGSIZE / sizeof(uint32_t); i ++) {
+  //   if(i % 16 == 0)
+  //     printf("\n");
+  //   printf("%p:%x,", dir + i, *(dir + i));
+  // }
   set_satp(kas.ptr);
+  printf("vme_init set satp finished\n");
   vme_enable = 1;
 
   return true;
@@ -69,13 +78,15 @@ void __am_switch(Context *c) {
 void map(AddrSpace *as, void *va, void *pa, int prot) {
   uintptr_t vpn1 = (((uintptr_t) va) >> 22) & 0x3ff;
   uintptr_t vpn0 = (((uintptr_t) va) >> 12) & 0x3ff;
-  uintptr_t pnn = (((uintptr_t)pa) >> 12) && 0xfffff;
+  uintptr_t pnn = (((uintptr_t) pa) >> 12) & 0xfffff;
   uintptr_t *dir = (uintptr_t *)as->ptr;
+  uintptr_t mode = 0x3ff;
   if(!dir[vpn1]) {
-    dir[vpn1] = (uintptr_t)pgalloc_usr(PGSIZE);
+    uintptr_t np = (uintptr_t)pgalloc_usr(PGSIZE);
+    dir[vpn1] = np | mode;
   }
-  uintptr_t * table = (uintptr_t *)dir[vpn1];
-  table[vpn0] = pnn;
+  uintptr_t * table = (uintptr_t *)(dir[vpn1] &~mode);
+  table[vpn0] = pnn << 10 | mode;
 }
 
 Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
