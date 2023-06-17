@@ -11,22 +11,34 @@
 # define Elf_Phdr Elf32_Phdr
 #endif
 
-#define LOAD_BUF_SIZE 512
+#define LOAD_BUF_SIZE PGSIZE
 static uint8_t buf[LOAD_BUF_SIZE];
 static void do_load_buf(int fd, size_t source_offset, uint8_t* dest_addr, size_t len) {
   fs_lseek(fd, source_offset, SEEK_SET);
   fs_read(fd, buf, len);
   memcpy(dest_addr, buf, len);
 }
-static void load_segment(int fd, size_t offset, uint8_t * vaddr, size_t file_size, size_t mem_size) {
+static void load_segment(PCB * pcb, int fd, size_t offset, uint8_t * vaddr, size_t file_size, size_t mem_size) {
+  printf("load_segment: pcb %p, filesize %d, mem_size %d\n", pcb, file_size, mem_size);
     for(int i = 0; i < file_size / LOAD_BUF_SIZE; i ++) {
-      do_load_buf(fd, offset + i * LOAD_BUF_SIZE, vaddr + i * LOAD_BUF_SIZE, LOAD_BUF_SIZE);
+      uint8_t * pp = new_page(1);
+      map(&pcb->as, vaddr + i * LOAD_BUF_SIZE, pp, 1);
+      do_load_buf(fd, offset + i * LOAD_BUF_SIZE, pp, LOAD_BUF_SIZE);
     }
     size_t rest = file_size % LOAD_BUF_SIZE;
     if(rest > 0) {
-      do_load_buf(fd, offset + file_size - rest, vaddr + file_size - rest, rest);
+      uint8_t * pp = new_page(1);
+      map(&pcb->as, vaddr + file_size - rest, pp, 1);
+      do_load_buf(fd, offset + file_size - rest, pp, rest);
+      memset(pp + rest, 0, LOAD_BUF_SIZE - rest);
     }
-    memset(vaddr + file_size, 0, mem_size - file_size);
+    for(uint8_t* emptyaddr = rest == 0 ? vaddr + file_size : vaddr + file_size - rest + LOAD_BUF_SIZE;
+                  emptyaddr < vaddr + mem_size; emptyaddr += LOAD_BUF_SIZE){
+      uint8_t *pp = new_page(1);
+      map(&pcb->as, emptyaddr, pp, 1);
+      int left = vaddr + mem_size - emptyaddr;
+      memset(pp, 0, left < LOAD_BUF_SIZE ? left : LOAD_BUF_SIZE);
+    }
 }
 static uintptr_t loader(PCB *pcb, const char *filename) {
   if(filename == NULL) {
@@ -47,13 +59,13 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
           elf_header.e_ident[EI_MAG1] == ELFMAG1 &&
           elf_header.e_ident[EI_MAG2] == ELFMAG2 &&
           elf_header.e_ident[EI_MAG3] == ELFMAG3) {
-    Log("entry:%x\n",  elf_header.e_entry);
+    Log("virtual entry:%x\n",  elf_header.e_entry);
     Elf_Phdr elf_program_header;
     for(int i = 0; i < elf_header.e_phnum; i ++) {
       fs_lseek(fd, elf_header.e_phoff + i * elf_header.e_phentsize, SEEK_SET);
       fs_read(fd, &elf_program_header, elf_header.e_phentsize);
       if(elf_program_header.p_type == PT_LOAD) {
-        load_segment(fd, elf_program_header.p_offset, (uint8_t*)elf_program_header.p_vaddr, elf_program_header.p_filesz, elf_program_header.p_memsz);
+        load_segment(pcb, fd, elf_program_header.p_offset, (uint8_t*)elf_program_header.p_vaddr, elf_program_header.p_filesz, elf_program_header.p_memsz);
       }
     }
     fs_close(fd);
@@ -94,10 +106,15 @@ void debug_param(uintptr_t top) {
 }
 uintptr_t pargv[10];
 uintptr_t penvp[10];
+#define USER_STACK_PAGE_COUNT 8
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
   // Assign stack and copy argv first to avoid argv, which may be assigned in code space,  is destroyed by loading code.
-  char *top = new_page(8);
-  top += 8 * PGSIZE;
+  protect(&pcb->as);
+  char *top = new_page(USER_STACK_PAGE_COUNT);
+  char *end = top;
+  for(int i = 0; i < USER_STACK_PAGE_COUNT; i ++)
+    map(&pcb->as, pcb->as.area.end - PGSIZE * (USER_STACK_PAGE_COUNT - i), top + PGSIZE * i, 1);
+  top += USER_STACK_PAGE_COUNT * PGSIZE;
   top -=8;
   int argc = 0;
   for(argc = 0; argv[argc] != NULL ; argc ++) {
@@ -139,9 +156,10 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   Area area;
   area.start = pcb->stack;
   area.end = pcb->stack + STACK_SIZE;
-  pcb->cp = ucontext(NULL, area, (void*)entry);
-  pcb->cp->GPRx = (uintptr_t)top2;
+  pcb->cp = ucontext(&pcb->as, area, (void*)entry);
+  int used_stack = end - (char *)top2;
+  pcb->cp->GPRx = (uintptr_t)(pcb->as.area.end - used_stack);
   printf("context_uload stack:%p, heap:(%p to %p)\n", pcb->cp->GPRx, heap.start, heap.end);
-  debug_param(pcb->cp->GPRx);
+  debug_param((uintptr_t)top2);
 }
 

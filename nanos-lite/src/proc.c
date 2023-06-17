@@ -33,7 +33,7 @@ void hello_fun(void *arg) {
 
 extern void naive_uload(PCB *pcb, const char *filename); 
 extern void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]);
-#define EXEC_FILE "/bin/nterm"
+#define EXEC_FILE "/bin/dummy"
 static char * const argv[] = {EXEC_FILE, NULL};
 static char * const envp[] = {NULL};
 void init_proc() {
