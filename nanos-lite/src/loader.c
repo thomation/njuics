@@ -109,9 +109,9 @@ uintptr_t penvp[10];
 #define USER_STACK_PAGE_COUNT 8
 void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]) {
   // Assign stack and copy argv first to avoid argv, which may be assigned in code space,  is destroyed by loading code.
+  // TODO: How to switch pa to va for stack
   protect(&pcb->as);
   char *top = new_page(USER_STACK_PAGE_COUNT);
-  char *end = top;
   for(int i = 0; i < USER_STACK_PAGE_COUNT; i ++)
     map(&pcb->as, pcb->as.area.end - PGSIZE * (USER_STACK_PAGE_COUNT - i), top + PGSIZE * i, 1);
   top += USER_STACK_PAGE_COUNT * PGSIZE;
@@ -157,8 +157,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   area.start = pcb->stack;
   area.end = pcb->stack + STACK_SIZE;
   pcb->cp = ucontext(&pcb->as, area, (void*)entry);
-  int used_stack = end - (char *)top2;
-  pcb->cp->GPRx = (uintptr_t)(pcb->as.area.end - used_stack);
+  pcb->cp->GPRx = (uintptr_t)top2;
   printf("context_uload stack:%p, heap:(%p to %p)\n", pcb->cp->GPRx, heap.start, heap.end);
   debug_param((uintptr_t)top2);
 }
