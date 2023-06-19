@@ -10,6 +10,7 @@ int sys_read(int fd, void * buf, size_t len);
 int sys_write(int fd, void * buf, size_t len);
 int sys_close(int fd);
 int sys_lseek(int fd, int offset, int whence);
+extern int mm_brk(uintptr_t brk); 
 int sys_brk(void * addr);
 extern void naive_uload(PCB *pcb, const char *filename); 
 extern void create_proc(const char *filename, char *const argv[], char *const envp[]); 
@@ -87,7 +88,8 @@ int sys_lseek(int fd, int offset, int whence) {
   return fs_lseek(fd, offset, whence);
 }
 int sys_brk(void * addr) {
-  return 0;
+  printf("sys_brk: %p\n", addr);
+  return mm_brk((uintptr_t) addr);
 }
 int sys_execve(const char *fname, char * const argv[], char *const envp[])
 {

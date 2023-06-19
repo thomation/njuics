@@ -32,13 +32,15 @@ static void load_segment(PCB * pcb, int fd, size_t offset, uint8_t * vaddr, size
       do_load_buf(fd, offset + file_size - rest, pp, rest);
       memset(pp + rest, 0, LOAD_BUF_SIZE - rest);
     }
-    for(uint8_t* emptyaddr = rest == 0 ? vaddr + file_size : vaddr + file_size - rest + LOAD_BUF_SIZE;
-                  emptyaddr < vaddr + mem_size; emptyaddr += LOAD_BUF_SIZE){
+    uint8_t* emptyaddr = rest == 0 ? vaddr + file_size : vaddr + file_size - rest + LOAD_BUF_SIZE;
+    while(emptyaddr < vaddr + mem_size) {
       uint8_t *pp = new_page(1);
       map(&pcb->as, emptyaddr, pp, 1);
       int left = vaddr + mem_size - emptyaddr;
       memset(pp, 0, left < LOAD_BUF_SIZE ? left : LOAD_BUF_SIZE);
+      emptyaddr += LOAD_BUF_SIZE;
     }
+    pcb->max_brk = (uintptr_t) emptyaddr;
 }
 static uintptr_t loader(PCB *pcb, const char *filename) {
   if(filename == NULL) {
@@ -158,7 +160,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   area.end = pcb->stack + STACK_SIZE;
   pcb->cp = ucontext(&pcb->as, area, (void*)entry);
   pcb->cp->GPRx = (uintptr_t)top2;
-  printf("context_uload stack:%p, heap:(%p to %p)\n", pcb->cp->GPRx, heap.start, heap.end);
+  printf("context_uload stack:%p, max_brk:%p\n", pcb->cp->GPRx, pcb->max_brk);
   debug_param((uintptr_t)top2);
 }
 
