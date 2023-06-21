@@ -16,6 +16,8 @@ Context* __am_irq_handle(Context *c) {
       ev.event = EVENT_YIELD;
     else if(c->mcause >= 0 && c->mcause < 20)
       ev.event = EVENT_SYSCALL;
+    else if(c->mcause == 0x80000007)
+      ev.event = EVENT_IRQ_TIMER;
     else
       ev.event = EVENT_ERROR;
 
@@ -40,7 +42,7 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
 
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   Context *context = (Context *)(kstack.end - sizeof(Context));
-  context->mstatus = 0;
+  context->mstatus = 0xff; // enable intr
   context->mcause = 0;
   context->mepc = (uintptr_t)entry;
   context->ARG1 = (uintptr_t)arg;

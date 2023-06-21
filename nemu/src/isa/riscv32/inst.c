@@ -18,6 +18,8 @@
 #include <cpu/ifetch.h>
 #include <cpu/decode.h>
 
+extern word_t isa_handle_mret();
+
 #define R(i) gpr(i)
 #define SR(i) sr(i & BITMASK(12))
 #define Mr vaddr_read
@@ -48,15 +50,6 @@ typedef union _word {
                            (BITS(i, 11, 8) << 1) | \
                            (BITS(i, 7, 7) << 11); } while(0)
 
-static word_t handle_mret() {
-  word_t addr = cpu.mepc;
-  addr += 4;
-#ifdef CONFIG_ETRACE_COND
-  if (ETRACE_COND)
-    log_write("mret@%x, next:%x\n", cpu.pc, addr);
-#endif
-  return addr;
-}
 static void decode_operand(Decode *s, int *dest, word_t *src1, word_t *src2, word_t *imm, int type) {
   uint32_t i = s->isa.inst.val;
   int rd  = BITS(i, 11, 7);
@@ -140,7 +133,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , I, tmp = SR(imm), SR(imm) = src1, R(dest) = tmp);
   INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , I, tmp = SR(imm), SR(imm) = src1 | tmp, R(dest) = tmp);
   INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , I, s->dnpc = isa_raise_intr(R(17), s->pc)); // R(17) is $a7
-  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , R, s->dnpc = handle_mret());
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , R, s->dnpc = isa_handle_mret());
 
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
