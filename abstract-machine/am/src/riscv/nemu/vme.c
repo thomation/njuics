@@ -76,8 +76,8 @@ void __am_switch(Context *c) {
 }
 
 void map(AddrSpace *as, void *va, void *pa, int prot) {
-  if(prot == 1)
-    printf("map from va %p to pa %p dir %p\n", va, pa, as->ptr);
+  // if(prot == 1)
+  //   printf("map from va %p to pa %p dir %p\n", va, pa, as->ptr);
   uintptr_t vpn1 = (((uintptr_t) va) >> 22) & 0x3ff;
   uintptr_t vpn0 = (((uintptr_t) va) >> 12) & 0x3ff;
   uintptr_t pnn = (((uintptr_t) pa) >> 12) & 0xfffff;
