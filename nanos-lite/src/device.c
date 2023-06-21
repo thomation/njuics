@@ -1,3 +1,5 @@
+#include <common.h>
+
 #if defined(MULTIPROGRAM) && !defined(TIME_SHARING)
 # define MULTIPROGRAM_YIELD() yield()
 #else
