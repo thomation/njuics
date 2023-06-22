@@ -20,7 +20,7 @@ SDL_Surface* IMG_Load(const char *filename) {
   uint8_t * buf = (uint8_t*)malloc(sizeof(uint8_t) * size);
   fseek(f, 0, SEEK_SET);
   size_t len = fread(buf, 1, size, f);
-  printf("IMG_load read len:%u\n", len);
+  printf("IMG_load read len:%u, size:%u\n", len, size);
   assert(size == len);
   SDL_Surface * surface = STBIMG_LoadFromMemory(buf, len);
   printf("IMG_load surface %p\n", surface);

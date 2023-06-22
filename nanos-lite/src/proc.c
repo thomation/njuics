@@ -27,7 +27,7 @@ void hello_fun(void *arg) {
       printf("hello fun pcb 0: %p, pcb 1:%p, stack:%p\n", pcb[0].cp, pcb[1].cp, &j);
     }
     j ++;
-    yield();
+    // yield();
   }
 }
 
@@ -63,6 +63,6 @@ Context* schedule(Context *prev) {
 // always select pcb[0] as the new process
   current = (current == &pcb[0] ? &pcb[1] : &pcb[0]);
 // then return the new context
-  // printf("schedule from %p to %p\n", prev, current->cp);
+  printf("schedule from %p to %p\n", prev, current->cp);
   return current->cp;
 }
