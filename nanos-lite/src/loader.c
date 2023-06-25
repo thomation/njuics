@@ -117,6 +117,7 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   for(int i = 0; i < USER_STACK_PAGE_COUNT; i ++)
     map(&pcb->as, pcb->as.area.end - PGSIZE * (USER_STACK_PAGE_COUNT - i), top + PGSIZE * i, 1);
   top += USER_STACK_PAGE_COUNT * PGSIZE;
+  uintptr_t  old = (uintptr_t)top;
   top -=8;
   int argc = 0;
   for(argc = 0; argv[argc] != NULL ; argc ++) {
@@ -154,13 +155,15 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
     * top2 = pargv[i];
   }
   * --top2 = argc;
+  int delta = old - (uintptr_t)top2;
+  printf("used stack size is %d\n", delta);
   uintptr_t entry = loader(pcb, filename);
   Area area;
   area.start = pcb->stack;// kernel stack
   area.end = pcb->stack + STACK_SIZE;
   pcb->cp = ucontext(&pcb->as, area, (void*)entry);
-  pcb->cp->GPRx = (uintptr_t)top2;
-  pcb->cp->GPSP = (uintptr_t)pcb->as.area.end; // user stack
+  pcb->cp->GPRx = (uintptr_t)pcb->as.area.end - delta;
+  pcb->cp->GPSP = pcb->cp->GPRx; // user stack
   printf("context_uload stack:%p, max_brk:%p\n", pcb->cp->GPRx, pcb->max_brk);
   debug_param((uintptr_t)top2);
 }
