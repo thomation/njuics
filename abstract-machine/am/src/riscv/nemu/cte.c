@@ -8,12 +8,12 @@ extern void __am_get_cur_as(Context *c);
 void __am_switch(Context *c); 
 
 Context* __am_irq_handle(Context *c) {
-  __am_get_cur_as(c);
   bool switched = false;
+  printf("am_irq_handle: before switch context:%p saved stack %x, np %x, space %p\n", c,  c->GPSP, c->np, &switched);
+  __am_get_cur_as(c);
   if (user_handler) {
     Event ev = {0};
     if(c->mcause == -1) {
-      printf("am_irq_handle: before switch context:%p saved stack %x, np %x\n", c,  c->GPSP, c->np);
       ev.event = EVENT_YIELD;
       switched = true;
     } else if(c->mcause >= 0 && c->mcause < 20)
@@ -24,11 +24,10 @@ Context* __am_irq_handle(Context *c) {
       ev.event = EVENT_ERROR;
 
     c = user_handler(ev, c);
-    if(switched)
-      printf("am_irq_handle: after switch constext:%p saved stack %x, np %x\n", c, c->GPSP, c->np);
     assert(c != NULL);
   }
   __am_switch(c);
+  printf("am_irq_handle: after switch constext:%p saved stack %x, np %x, space:%p, switch?%d\n", c, c->GPSP, c->np, &switched, switched);
   return c;
 }
 

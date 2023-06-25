@@ -44,7 +44,7 @@ save_context:
   csrr t0, mcause
   csrr t1, mstatus
   csrr t2, mepc
-  csrrw t3, mscratch, x0   // t3 is original sp
+  csrr t3, mscratch   // t3 is original sp
   addi t4, sp, CONTEXT_SIZE
 
   STORE t0, OFFSET_CAUSE(sp)
@@ -68,6 +68,7 @@ save_all:
 
   mv a0, sp
   jal __am_irq_handle
+  csrw mscratch, sp // sp is kernel sp
   mv sp, a0
   LOAD t1, OFFSET_STATUS(sp)
   LOAD t2, OFFSET_EPC(sp)
@@ -77,8 +78,6 @@ save_all:
 
   bnez t3, restore_kernel
   // restore user
-  addi t4, sp, CONTEXT_SIZE
-  csrw mscratch, t4 // sp is kernel sp
   jal restore_all
 restore_kernel:
   csrrw x0, mscratch, x0
@@ -87,3 +86,7 @@ restore_all:
   LOAD sp, OFFSET_SP(sp) // sp is user or kernel sp
   mret
 error_label:
+  // Just for debug
+  # addi sp, sp, -CONTEXT_SIZE
+  # addi t4, sp, CONTEXT_SIZE
+  # csrr t3, mscratch   // t3 is original sp
