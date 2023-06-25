@@ -9,12 +9,14 @@ void __am_switch(Context *c);
 
 Context* __am_irq_handle(Context *c) {
   __am_get_cur_as(c);
+  bool switched = false;
   if (user_handler) {
     Event ev = {0};
-    // printf("am_irq_handle:%d\n", c->mcause);
-    if(c->mcause == -1)
+    if(c->mcause == -1) {
+      printf("am_irq_handle: before switch context:%p saved stack %x, np %x\n", c,  c->GPSP, c->np);
       ev.event = EVENT_YIELD;
-    else if(c->mcause >= 0 && c->mcause < 20)
+      switched = true;
+    } else if(c->mcause >= 0 && c->mcause < 20)
       ev.event = EVENT_SYSCALL;
     else if(c->mcause == 0x80000007)
       ev.event = EVENT_IRQ_TIMER;
@@ -22,6 +24,8 @@ Context* __am_irq_handle(Context *c) {
       ev.event = EVENT_ERROR;
 
     c = user_handler(ev, c);
+    if(switched)
+      printf("am_irq_handle: after switch constext:%p saved stack %x, np %x\n", c, c->GPSP, c->np);
     assert(c != NULL);
   }
   __am_switch(c);
@@ -47,6 +51,8 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   context->mepc = (uintptr_t)entry;
   context->ARG1 = (uintptr_t)arg;
   context->pdir = NULL;
+  context->GPSP = (uintptr_t)kstack.end;
+  context->np = 1;
   printf("kcontext: mepc:%p\n", context->mepc);
   return context;
 }
