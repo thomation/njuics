@@ -68,7 +68,8 @@ save_all:
 
   mv a0, sp
   jal __am_irq_handle
-  csrw mscratch, sp // sp is kernel sp
+  addi t4, sp, CONTEXT_SIZE
+  csrw mscratch, t4 // sp is kernel sp
   mv sp, a0
   LOAD t1, OFFSET_STATUS(sp)
   LOAD t2, OFFSET_EPC(sp)
