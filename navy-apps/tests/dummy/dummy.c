@@ -9,12 +9,13 @@
 extern int _syscall_(int, uintptr_t, uintptr_t, uintptr_t);
 
 int main(int argc, char ** argv) {
-  int test = 10;
-  printf("dummy main addr %p\n", main);
-  printf("dummy test addr %p, value %d\n", &test, test);
+  int test = 0;
   while(1) {
-    printf("dummy argv = %s\n", argv[1]);
-    _syscall_(SYS_yield, 0, 0, 0);
-  }
+    if(test % 10000 == 0) {
+      printf("dummy main addr %p, test=%d, argv=%s\n", main, test, argv[1]);
+      _syscall_(SYS_yield, 0, 0, 0);
+    }
+    test ++;
+ }
   return _syscall_(SYS_yield, 0, 0, 0);
 }
