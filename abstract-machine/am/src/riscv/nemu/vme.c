@@ -97,5 +97,6 @@ Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
   context->mcause = 0;
   context->mepc = (uintptr_t)entry;
   context->pdir = as->ptr;
+  context->np = 0;
   return context;
 }
