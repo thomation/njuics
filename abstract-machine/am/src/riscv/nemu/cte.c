@@ -9,7 +9,7 @@ void __am_switch(Context *c);
 
 Context* __am_irq_handle(Context *c) {
   bool switched = false;
-  printf("am_irq_handle: before switch context:%p saved stack %x, np %x, space %p\n", c,  c->GPSP, c->np, &switched);
+  printf("am_irq_handle: before switch context:%p saved stack %x, np %x, space %p, cause %d, entry %p\n", c,  c->GPSP, c->np, &switched, c->mcause, c->mepc);
   __am_get_cur_as(c);
   if (user_handler) {
     Event ev = {0};
