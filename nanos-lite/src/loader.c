@@ -156,10 +156,11 @@ void context_uload(PCB *pcb, const char *filename, char *const argv[], char *con
   * --top2 = argc;
   uintptr_t entry = loader(pcb, filename);
   Area area;
-  area.start = pcb->stack;
+  area.start = pcb->stack;// kernel stack
   area.end = pcb->stack + STACK_SIZE;
   pcb->cp = ucontext(&pcb->as, area, (void*)entry);
   pcb->cp->GPRx = (uintptr_t)top2;
+  pcb->cp->GPSP = (uintptr_t)pcb->as.area.end; // user stack
   printf("context_uload stack:%p, max_brk:%p\n", pcb->cp->GPRx, pcb->max_brk);
   debug_param((uintptr_t)top2);
 }

@@ -35,6 +35,7 @@ __am_asm_trap:
   bnez sp, save_context    // (2) take the branch if we trapped from user
   csrr sp, mscratch        // (3) if we trapped from kernel, restore the original sp
 
+// now sp is in kernel space
 save_context:
   addi sp, sp, -CONTEXT_SIZE
 
@@ -43,19 +44,23 @@ save_context:
   csrr t0, mcause
   csrr t1, mstatus
   csrr t2, mepc
-  csrrw t3, mscratch, t3   // atomically exchange t3 and mscratch, t3 is original sp
+  csrrw t3, mscratch, x0   // t3 is original sp
+  addi t4, sp, CONTEXT_SIZE
 
   STORE t0, OFFSET_CAUSE(sp)
   STORE t1, OFFSET_STATUS(sp)
   STORE t2, OFFSET_EPC(sp)
-  STORE t3, OFFSET_SP(sp)
-  // if t3 == sp then kernel
-  bne t3, sp, save_user
-  lui t4, 1 // save kernel
+  STORE t3, OFFSET_SP(sp) // store original sp, may be sp in user space
+
+  bne t3, t4, save_user
+  li t4, 1 // save kernel
+  jal save_all
 save_user:
-  lui t4, 0
+  li t4, 0
+save_all:
   STORE t4, OFFSET_NP(sp)
-  csrwi mscratch, 0 // support re-entry of CTE
+  csrrw x0, mscratch, x0 // support re-entry of CTE
+
   # set mstatus.MPRV to pass difftest
   li a0, (1 << 17)
   or t1, t1, a0
@@ -69,11 +74,16 @@ save_user:
   LOAD t3, OFFSET_NP(sp)
   csrw mstatus, t1
   csrw mepc, t2
+
   bnez t3, restore_kernel
   // restore user
   addi t4, sp, CONTEXT_SIZE
   csrw mscratch, t4 // sp is kernel sp
+  jal restore_all
 restore_kernel:
+  csrrw x0, mscratch, x0
+restore_all:
   MAP(REGS, POP)
-  LOAD sp, OFFSET_SP(sp)
+  LOAD sp, OFFSET_SP(sp) // sp is user or kernel sp
   mret
+error_label:
