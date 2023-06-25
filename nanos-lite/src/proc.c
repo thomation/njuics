@@ -25,16 +25,16 @@ void hello_fun(void *arg) {
     if(j % 10000 == 0) {
       Log("Hello World from Nanos-lite with arg '%p' for the %dth time!", (uintptr_t)arg, j);
       printf("hello fun pcb 0: %p, pcb 1:%p, stack:%p\n", pcb[0].cp, pcb[1].cp, &j);
+      yield();
     }
     j ++;
-    // yield();
   }
 }
 
 extern void naive_uload(PCB *pcb, const char *filename); 
 extern void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]);
-#define EXEC_FILE "/bin/bird"
-static char * const argv[] = {EXEC_FILE, NULL};
+#define EXEC_FILE "/bin/dummy"
+static char * const argv[] = {EXEC_FILE, "1"};
 static char * const envp[] = {NULL};
 void init_proc() {
   context_kload(&pcb[0], hello_fun, (void*)1);
