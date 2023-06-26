@@ -34,16 +34,19 @@ void hello_fun(void *arg) {
 extern void naive_uload(PCB *pcb, const char *filename); 
 extern void context_uload(PCB *pcb, const char *filename, char *const argv[], char *const envp[]);
 #define EXEC_FILE "/bin/dummy"
+static char * const argv0[] = {EXEC_FILE, "0"};
 static char * const argv[] = {EXEC_FILE, "1"};
 static char * const envp[] = {NULL};
 void init_proc() {
-  context_kload(&pcb[0], hello_fun, (void*)1);
+  context_kload(&pcb_boot, NULL, NULL);
+  // context_kload(&pcb[0], hello_fun, (void*)1);
   switch_boot_pcb();
 
   Log("Initializing processes...");
 
   // load program here
   // man execve, argv and envp must be terminated with NULL
+  context_uload(&pcb[0], EXEC_FILE, argv0, envp);
   context_uload(&pcb[1], EXEC_FILE, argv, envp);
 
 }
