@@ -19,20 +19,18 @@ extern int gettimeofday(void * tv, void * tz);
 int sys_gettimeofday(void * tv, void * tz);
 
 void do_syscall(Context *c) {
-  printf("do_syscall context %p\n", c);
   uintptr_t a[4];
   a[0] = c->GPR1;
   a[1] = c->GPR2;
   a[2] = c->GPR3;
   a[3] = c->GPR4;
-  // printf("System Call: type:%d, a1:%p, a2:%p, a3:%p\n", a[0], a[1], a[2], a[3]);
+  // printf("System Call: context %p type:%d, a1:%p, a2:%p, a3:%p\n", c, a[0], a[1], a[2], a[3]);
   switch (a[0]) {
     case SYS_exit:
       c->GPRx = sys_exit();
       break;
     case SYS_yield:
-      asm volatile("li a7, -1; ecall");
-      c->GPRx = 0;
+      c->GPRx = sys_yield();
       break;
     case SYS_open:
       c->GPRx = sys_open((const char *)a[1], a[2], a[3]);

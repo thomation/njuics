@@ -13,7 +13,7 @@ int main(int argc, char ** argv) {
   while(1) {
     if(test % 10000 == 0) {
       printf("dummy main addr %p, test=%d, argv=%s\n", main, test, argv[1]);
-      _syscall_(SYS_yield, 0, 0, 0);
+      // _syscall_(SYS_yield, 0, 0, 0);
     }
     test ++;
  }
