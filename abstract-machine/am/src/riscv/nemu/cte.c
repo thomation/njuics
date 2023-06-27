@@ -18,8 +18,10 @@ Context* __am_irq_handle(Context *c) {
       switched = true;
     } else if(c->mcause >= 0 && c->mcause < 20)
       ev.event = EVENT_SYSCALL;
-    else if(c->mcause == 0x80000007)
+    else if(c->mcause == 0x80000007){
       ev.event = EVENT_IRQ_TIMER;
+      switched = true;
+    }
     else
       ev.event = EVENT_ERROR;
 
