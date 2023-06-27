@@ -62,7 +62,7 @@ void create_proc(const char *filename, char *const argv[], char *const envp[]) {
 }
 Context* schedule(Context *prev) {
   // save the context pointer
-  current->cp = prev;
+  *(current->cp) = *prev;
 // always select pcb[0] as the new process
   current = (current == &pcb[0] ? &pcb[1] : &pcb[0]);
 // then return the new context
